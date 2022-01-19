@@ -2,6 +2,7 @@ package com.yichen.basic.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.yichen.basic.dto.BusOrderInfoVo;
 import com.yichen.basic.dto.FinCloudDto;
 import com.yichen.basic.dto.ResultData;
 import com.yichen.basic.dto.ResultDataUtil;
@@ -12,6 +13,7 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -31,6 +33,18 @@ import java.util.*;
 public class FincloudService {
 
     private static Logger logger= LoggerFactory.getLogger(FincloudService.class);
+
+
+    private static String defaultFincloudUrl;
+
+    /**
+     * 静态变量 直接用 value 方法赋值无效，值为null，需要通过 set 方法赋值
+     * @param url
+     */
+    @Value("${yichen.server.url.fincloud}")
+    public void setDefaultFincloudUrl(String url){
+        defaultFincloudUrl=url;
+    }
 
 
     /**
@@ -109,14 +123,14 @@ public class FincloudService {
 
     /**
      * 查询 年化利率
-     * @param length  还款计划长度
      * @param productId 产品号
      * @param busCode 金融云 工单号
+     * @param saleChannel  渠道 万卡为 1056  湖消 1093
      * @return 年化利率信息  没有查询到返回默认值
      */
-    public static ResultData getBusOrderInfo(int length, String productId, String busCode){
+    public static ResultData getBusOrderInfo(String productId, String busCode,String saleChannel){
 
-        Map<String, Object> headerMap = new HashMap<>(2);
+        Map<String, Object> headerMap = new HashMap<>(16);
         //  30060000003
         String intfCode="100191";
         String code="30340";
@@ -144,43 +158,66 @@ public class FincloudService {
         jsonHead.put("secretKey","");
         jsonHead.put("isSecret",2);
         Map<String,String> jsonContent=new HashMap<>(8);
-//        jsonContent.put("appId",busCode);
-        jsonContent.put("appId","1300002047");
-        //  1056  865
-        jsonContent.put("saleChannel","1056");
-        jsonContent.put("productId","867");
+        //  1300002047
+        jsonContent.put("appId",busCode);
+        //  1056 => 万卡    1093 => 小鱼
+        jsonContent.put("saleChannel",saleChannel);
+//        867
+        jsonContent.put("productId",productId);
         jsonContent.put("saleChannelKey","null");
         jsonContent.put("productIdKey","null");
-        Map<String, Object> requestParam = new HashMap<String, Object>(2);
+        Map<String, Object> requestParam = new HashMap<String, Object>(4);
         requestParam.put("jsonHead", jsonHead);
         requestParam.put("jsonContent", jsonContent);
         try{
             logger.info("getBusOrderInfo => 请求头 {}，请求体 {}",JSON.toJSONString(headerMap),JSON.toJSONString(requestParam));
-            String orderInfo = httpPostWithHeaderAndBody("http://bull-prepose-test.sc.9f.cn/fincloud/common.intf",headerMap,JSON.toJSONString(requestParam),"application/json; charset=UTF-8");
+            String orderInfo = httpPostWithHeaderAndBody(defaultFincloudUrl,headerMap,JSON.toJSONString(requestParam),"application/json; charset=UTF-8");
             logger.info("getBusOrderInfo => 请求结果 {}",orderInfo);
-            if(orderInfo!=null&&!"".equals(orderInfo)){
-                JSONObject results = JSON.parseObject(orderInfo);
-                if(Objects.nonNull(results)&&"000000".equals(results.get("code"))&&"0000".equals(results.get("code"))){
-                    JSONObject respResult = JSON.parseObject(String.valueOf(results.get("result")));
-                    if(Objects.nonNull(respResult)&&"000000".equals(respResult.get("resp_code"))&&"0000".equals(respResult.get("resp_code"))){
-                        JSONObject busOrderInfoVo = JSON.parseObject(String.valueOf(respResult.get("resp_result")));
-                        return ResultDataUtil.successResult("从金融云工单中心获取数据成功",busOrderInfoVo.get("yearRate"));
+
+            BusOrderInfoVo busOrderInfoVo = JSON.parseObject(orderInfo, BusOrderInfoVo.class);
+            if(Objects.nonNull(busOrderInfoVo) && ("000000".equals(busOrderInfoVo.getCode()) || "0000".equals(busOrderInfoVo.getCode()))) {
+                String busOrderDTOResultJson = busOrderInfoVo.getResult();
+                JSONObject object = (JSONObject) JSONObject.parse(busOrderDTOResultJson);
+                if (object != null) {
+                    // 反向填充，去除里面的双引号转义
+                    String resp_code = object.getString("resp_code");
+                    String loanMapStr = object.getString("resp_result");
+                    if ("0000".equals(resp_code) || "000000".equals(resp_code)) {
+                        Map map = JSON.parseObject(loanMapStr, Map.class);
+                        object.put("resp_result",map);
                     }
-                    else{
-                        return ResultDataUtil.successResult("获取工单数据不正确，返回默认值，根据借款期数判断",getDefaultRateInfo(length));
-                    }
+                    return ResultDataUtil.successResult("请求金融云成功",object);
                 }
-                else{
-                    return ResultDataUtil.successResult("请求数据出错，返回默认值，根据借款期数判断",getDefaultRateInfo(length));
+                else {
+                    return ResultDataUtil.errorResult("转换对象为空或者转换异常，返回默认值，根据借款期数判断",null);
                 }
             }
             else{
-                return ResultDataUtil.successResult("请求数据为空，返回默认值，根据借款期数判断",getDefaultRateInfo(length));
+                return ResultDataUtil.errorResult("请求状态不为成功，返回默认值，根据借款期数判断");
             }
+
+
         }
         catch (Exception e){
             logger.warn("getBusOrderInfo =》fincloud feign 请求出错");
-            return ResultDataUtil.successResult("执行异常，返回默认值，根据借款期数判断",getDefaultRateInfo(length));
+            return ResultDataUtil.errorResult("执行异常，返回默认值，根据借款期数判断");
+        }
+    }
+
+    public static ResultData getYearRate(String productId, String busCode,String saleChannel){
+        ResultData resultData = getBusOrderInfo(productId, busCode, saleChannel);
+        if("0".equals(resultData.getStatus())){
+            logger.warn("请求的工单信息为空");
+            return ResultDataUtil.successResult("请求的工单信息为空，返回默认值","0.24");
+        }
+        JSONObject object= (JSONObject) resultData.getData();
+        String resp_code = object.getString("resp_code");
+        if ("0000".equals(resp_code) || "000000".equals(resp_code)) {
+            JSONObject loanMapStr=object.getJSONObject("resp_result");
+            return ResultDataUtil.successResult(String.valueOf(loanMapStr.get("yearRate")));
+        }
+        else {
+            return ResultDataUtil.successResult("数据体状态不为成功，返回默认值，根据借款期数判断");
         }
     }
 
@@ -264,9 +301,4 @@ public class FincloudService {
         }
         return sb.toString();
     }
-
-    public static void main(String[] args) {
-        System.out.println(JSON.toJSONString(getBusOrderInfo(6,"666","1300002655")));
-    }
-
 }
