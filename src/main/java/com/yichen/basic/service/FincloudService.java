@@ -46,21 +46,16 @@ public class FincloudService {
         }
         url=String.valueOf(dto.getUrl());
         Map<String,Object> requestHeader;
-        Map<String,Object> jsonHeader;
-        Map<String,Object> jsonContent;
+        Map<String,Object> dataBody;
         // 开始构造请求头
         if(Objects.isNull(dto.getRequestHeader())){
             logger.info("请求头为空，不符合");
         }
         requestHeader=dto.getRequestHeader();
-        if(Objects.isNull(dto.getJsonHeader())){
-            logger.info("请求体中的header 为空");
+        if(Objects.isNull(dto.getDataBody())){
+            logger.info("请求体 为空");
         }
-        jsonHeader=dto.getJsonHeader();
-        if(Objects.isNull(dto.getJsonContent())){
-            logger.info("请求体中的内容为空");
-        }
-        jsonContent=dto.getJsonContent();
+        dataBody=dto.getDataBody();
         StringBuilder requestNoBuilder=new StringBuilder();
         StringBuilder signBuilder=new StringBuilder();
         String timestamp=String.valueOf(System.currentTimeMillis());
@@ -105,14 +100,10 @@ public class FincloudService {
             logger.info("请求头中没有版本号，设置默认版本号 1.0.0");
             requestHeader.put("version","1.0.0");
         }
-        // 开始构造请求体中的  header 部分
-        Map<String,Object> body=new HashMap<>(2);
-        body.put("jsonHead",jsonHeader);
-        body.put("jsonContent",jsonContent);
 
 
         // 执行请求
-        String orderInfo = httpPostWithHeaderAndBody(url,requestHeader,JSON.toJSONString(body),"application/json; charset=UTF-8");
+        String orderInfo = httpPostWithHeaderAndBody(url,requestHeader,JSON.toJSONString(dataBody),"application/json; charset=UTF-8");
         return ResultDataUtil.successResult(orderInfo);
     }
 
