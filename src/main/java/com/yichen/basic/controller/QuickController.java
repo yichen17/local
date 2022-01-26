@@ -6,9 +6,11 @@ import com.yichen.basic.dto.FinCloudDto;
 import com.yichen.basic.dto.ResultData;
 import com.yichen.basic.dto.ResultDataUtil;
 import com.yichen.basic.service.FincloudService;
+import com.yichen.basic.service.FincloudServiceV2;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,9 @@ import java.util.Map;
 @RestController
 @Api(tags ="金融云相关-快捷调用服务")
 public class QuickController extends BaseController{
+
+    @Autowired
+    private FincloudServiceV2 serviceV2;
 
 
     @ApiOperation(value = "请求金融云数据")
@@ -58,13 +63,39 @@ public class QuickController extends BaseController{
         return FincloudService.getBusOrderInfo(productId,busCode,saleChannel);
     }
 
-
     @ApiOperation(value = "获取默认年利率信息")
     @PostMapping(value = "/defaultRateInfo",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResultData getDefaultRateInfo(@RequestParam(required=true,name = "len") @ApiParam(name = "len",value = "还款期数",example = "12" ) int len){
-        logger.info("查询默认年利率入参 还款期数 {}",len);
+    public ResultData getDefaultRateInfo(@RequestParam(required=true,name = "len") @ApiParam(name = "len",value = "还款期数",example = "12" ) int len) {
+        logger.info("查询默认年利率入参 还款期数 {}", len);
         return ResultDataUtil.successResult(FincloudService.getDefaultRateInfo(len));
     }
+
+
+    @ApiOperation(value = "查询工单信息v2")
+    @PostMapping(value = "/orderInfo/v2",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResultData getOrderInfoV2(@RequestParam(required=true,name = "intfCode") @ApiParam(name = "intfCode",value = "接口编号",example = "100191" )String intfCode,
+                                     @RequestParam(required=true,name = "code") @ApiParam(name = "code",value = "商户编号",example = "30340" )String code,
+                                     @RequestParam(required=true,name = "secretKey") @ApiParam(name = "secretKey",value = "密钥",example = "vx4nrssUVMJL2tHM" )String secretKey,
+                                     @RequestParam(required=true,name = "busCode") @ApiParam(name = "busCode",value = "金融云-工单号",example = "1300003749" )String busCode,
+                                     @RequestParam(required=true,name = "saleChannel") @ApiParam(name = "saleChannel",value = "渠道号",example = "1056" )String saleChannel,
+                                     @RequestParam(required=true,name = "productId") @ApiParam(name = "productId",value = "产品号",example = "865" )String productId){
+        logger.info("查询工单信息v2 入参 {}");
+        return serviceV2.getOrderInfo(intfCode,code,secretKey,busCode,saleChannel,productId);
+    }
+
+    @ApiOperation(value = "查询还款计划v2")
+    @PostMapping(value = "/repayPlan",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResultData getRepayPlanV2(@RequestParam(required=true,name = "certId") @ApiParam(name = "certId",value = "身份证",example = "412702199203156057" )String certId,
+                                     @RequestParam(required=true,name = "appId") @ApiParam(name = "appId",value = "金融云-工单号",example = "1300003635" )String appId,
+                                     @RequestParam(required=true,name = "channelId") @ApiParam(name = "channelId",value = "渠道号",example = "1093" )String channelId,
+                                     @RequestParam(required=true,name = "intfCode") @ApiParam(name = "intfCode",value = "接口编号",example = "100206" )String intfCode,
+                                     @RequestParam(required=true,name = "code") @ApiParam(name = "code",value = "商户编号",example = "30340" )String code,
+                                     @RequestParam(required=true,name = "secretKey") @ApiParam(name = "secretKey",value = "密钥",example = "vx4nrssUVMJL2tHM" )String secretKey){
+        logger.info("查询还款计划 v2 入参 {}");
+        return serviceV2.getReplayPlan(certId,appId,channelId,intfCode,code,secretKey);
+    }
+
+
 
 
     public static JSONObject getJSONParam(HttpServletRequest request) {
