@@ -1,5 +1,6 @@
 package com.yichen.basic.controller;
 
+import com.yichen.basic.dto.CheckResultDTO;
 import com.yichen.basic.dto.ResultData;
 import com.yichen.basic.dto.ResultDataUtil;
 import com.yichen.basic.utils.DateUtils;
@@ -8,10 +9,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 /**
  * @author Qiuxinchao
@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/tool")
 @RestController
 public class ToolController extends BaseController{
+
+
+
 
     @PostMapping(value = "/timeToTimestamp",produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ApiOperation(value = "yyyy-MM-dd hh:mm:ss 时间转为时间戳")
@@ -45,6 +48,17 @@ public class ToolController extends BaseController{
         logger.info("时间戳转为日期，入参 {}",timestamp);
         String s = DateUtils.timestampToTime(timestamp);
         return ResultDataUtil.successResult(s);
+    }
+
+    @PostMapping(value = "/checkTwoResult",produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "两接口数据返回结果比对 => 可用于数据重构")
+    public ResultData checkTwoResult(@RequestParam("paramA") CheckResultDTO paramA,@RequestParam("paramB") CheckResultDTO paramB){
+        // 这里需要对结果进行比对   方法有一下几种
+        // 1、重写对象的toString()方法   =>  需要自己构造逻辑
+        // 2、构建工具类对类对象逐字段比对 => 返回结构通常为json格式字符串  => 比对逻辑
+        // 3、调用三方工具类   =>  是否有现成的
+        Objects.deepEquals()
+        return null;
     }
 
 
