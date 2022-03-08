@@ -2,6 +2,7 @@ package com.yichen.basic.service;
 
 import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yichen.basic.constant.HttpRequestEnum;
 import com.yichen.basic.dto.RequestDTO.CheckResultDTO;
@@ -31,16 +32,9 @@ public class CheckRequestResultService {
         // 请求数据
         String resultA = getQueryData(paramA);
         String resultB = getQueryData(paramB);
-        log.info("A 请求结果 {}\n B请求结果 {}",JSON.toJSONString(resultA),JSON.toJSONString(resultB));
+        log.info("A 请求结果 {}",JSON.toJSONString(resultA));
+        log.info("B请求结果 {}",JSON.toJSONString(resultB));
         // 排序结果校验字段，先根据分号切分在根据字段长度排序
-        String[] fields = checkFields.split(";");
-        if (fields.length == 0){
-            return ResultDataUtil.paramEmpty("结果校验字段不能为空");
-        }
-        Arrays.sort(fields,(a,b)->{
-            return a.split("\\.").length - b.split("\\.").length;
-        });
-        // 将数据转换成 JSONObject
         String[] sortField = getSortField(checkFields);
         if (Objects.isNull(sortField) || sortField.length == 0){
             return ResultDataUtil.paramEmpty("结果比对字段为空");
@@ -78,10 +72,31 @@ public class CheckRequestResultService {
             log.error("获取数据出错，异常信息 {}",e.getMessage(),e);
             return false;
         }
-        return compareObject(a,b);
+        return compareObject(a,b,fields[i]);
     }
 
-    public boolean compareObject(Object a, Object b){
+    //  TODO JSONArray 考虑
+    public boolean compareObject(Object a, Object b,String field){
+
+        if (a instanceof JSONArray){
+            if (b instanceof JSONArray){
+                JSONArray arrayA = (JSONArray) a;
+                JSONArray arrayB = (JSONArray) b;
+                if (arrayA.size() != arrayB.size()){
+                    log.info("数组长度不一致数据字段 {}",field);
+                    return false;
+                }
+                for (int i=0;i<arrayA.size();i++){
+                    if (!compareObject(arrayA.get(i),arrayB.get(i),"位置"+i)){
+                        return false;
+                    }
+                }
+                return true;
+            }
+            log.info("类型不一致数据字段 {}",field);
+            return false;
+        }
+
         boolean isJsonA = a instanceof JSONObject;
         boolean isJsonB = b instanceof JSONObject;
         // 都为值
@@ -92,6 +107,7 @@ public class CheckRequestResultService {
             if (a != null){
                 return a.equals(b);
             }
+            log.info("不一致数据字段 {}",field);
             return false;
         }
         // 都为 json 对象
@@ -104,7 +120,8 @@ public class CheckRequestResultService {
 
     public boolean compareJsonData(JSONObject jsonA, JSONObject jsonB){
         for(Map.Entry<String,Object> entry: jsonA.entrySet()){
-            if (!compareObject(jsonA.get(entry.getKey()),jsonB.get(entry.getKey()))){
+            if (!compareObject(jsonA.get(entry.getKey()), jsonB.get(entry.getKey()), entry.getKey())){
+                log.info("不一致数据字段 {}",entry.getKey());
                 return false;
             }
         }
