@@ -10,8 +10,24 @@ public enum HttpRequestEnum {
     /**
      * 请求方式
      */
-    POST,
-    GET,
-    OPTIONS,
-    PUT;
+    POST_FORM("POST_FORM"),
+    POST_JSON("POST_JSON"),
+    GET("GET"),
+    OPTIONS("OPTIONS"),
+    PUT("PUT");
+
+    /**
+     * 请求方式
+     */
+    private String type;
+
+    public String getType() {
+        return type;
+    }
+
+    HttpRequestEnum(String type) {
+        this.type = type;
+    }
+
+
 }
