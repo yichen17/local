@@ -1,6 +1,7 @@
 package com.yichen.basic.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.yichen.basic.dto.CheckDataStore;
 import com.yichen.basic.dto.RequestDTO;
 import com.yichen.basic.dto.ResultData;
 import com.yichen.basic.dto.ResultDataUtil;
@@ -14,7 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Qiuxinchao
@@ -57,11 +58,18 @@ public class ToolController extends BaseController{
     @PostMapping(value = "/checkTwoRequestResult",produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "两接口数据返回结果比对 => 可用于数据重构  =>  b中必须包含a中所有字段")
     public ResultData checkTwoRequestResult(@RequestBody RequestDTO dto){
-        // 这里需要对结果进行比对   方法有一下几种
-        // 1、重写对象的toString()方法   =>  需要自己构造逻辑
-        // 2、构建工具类对类对象逐字段比对 => 返回结构通常为json格式字符串  => 比对逻辑
-        // 3、调用三方工具类   =>  是否有现成的
-        return checkRequestResultService.checkTwoResult(dto.getDtoA(),dto.getDtoB(),dto.getCheckFields());
+        Set<String> excludeFields ;
+        if (Objects.isNull(dto.getExcludeFields())){
+            excludeFields = new HashSet<>();
+        }
+        else {
+            excludeFields = new HashSet<String>(Arrays.asList(dto.getExcludeFields().split(";")));
+        }
+        CheckDataStore dataStore = CheckDataStore.builder().excludeFields(excludeFields).diffPath(new Stack<>()).build();
+        CheckRequestResultService.DATA_STORE.set(dataStore);
+        ResultData result = checkRequestResultService.checkTwoResult(dto.getDtoA(), dto.getDtoB(), dto.getCheckFields());
+        CheckRequestResultService.DATA_STORE.remove();
+        return result;
     }
 
     @PostMapping(value = "/checkTwoStringResult",produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)

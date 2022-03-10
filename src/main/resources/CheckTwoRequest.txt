@@ -1,5 +1,6 @@
 {
   "checkFields": "data;",
+  "excludeFields": "createTime;updatedTime;realNameTime;birthDay",
   "dtoA": {
     "body": {
       "mobile": "18600296208",
@@ -31,3 +32,72 @@
     "url": "http://spring-webflux-api-gateway-test.sc.9f.cn/userapi/userinfo/select/selectByField"
   }
 }
+
+========================================================================================================================
+
+
+{
+  "checkFields": "data;",
+  "excludeFields": "label;isLableMember;isPzscLable",
+  "dtoA": {
+    "body": {
+      "mobile": "18600296208",
+      "selectType": "120ac",
+      "certId": "340827199309120020",
+      "customerId": "1170259320",
+      "md5Mobile": "05c24b607ffaaa2bfb71cf205504f4a1",
+      "accountId": "22041166666925628"
+    },
+    "header": {
+      "token": "e3150300b7f70000f4b5d0db7dd54f33aae9ba473baff344",
+      "proId": "1001"
+    },
+    "type": "POST_FORM",
+    "url": "http://onecard-user-api-test.sc.9f.cn/api/account/userInfo"
+  },
+  "dtoB": {
+    "body": {
+      "mobile": "18600296208",
+      "selectType": "120ac",
+      "certId": "340827199309120020",
+      "customerId": "1170259320",
+      "md5Mobile": "05c24b607ffaaa2bfb71cf205504f4a1",
+      "accountId": "22041166666925628"
+    },
+    "header": {
+      "token": "e3150300b7f70000f4b5d0db7dd54f33aae9ba473baff344",
+      "proId": "1001"
+    },
+    "type": "POST_FORM",
+    "url": "http://spring-webflux-api-gateway-test.sc.9f.cn/userapi/userinfo/account/userInfo"
+  }
+}
+
+
+
+
+========================================================================================================================
+
+
+
+{
+  "checkFields": "data;",
+  "excludeFields": "label;isLableMember",
+  "dtoA": {
+    "header": {
+      "token": "e3150300b7f70000f4b5d0db7dd54f33aae9ba473baff344",
+      "getProId": "1"
+    },
+    "type": "POST_FORM",
+    "url": "http://onecard-user-api-test.sc.9f.cn/user/api/front/info"
+  },
+  "dtoB": {
+    "header": {
+      "token": "e3150300b7f70000f4b5d0db7dd54f33aae9ba473baff344",
+      "getProId": "1"
+    },
+    "type": "POST_FORM",
+    "url": "http://spring-webflux-api-gateway-test.sc.9f.cn/userapi/userinfo/front/info"
+  }
+}
+

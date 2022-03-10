@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yichen.basic.constant.HttpRequestEnum;
+import com.yichen.basic.dto.CheckDataStore;
 import com.yichen.basic.dto.RequestDTO.CheckResultDTO;
 import com.yichen.basic.dto.ResultData;
 import com.yichen.basic.dto.ResultDataUtil;
@@ -23,6 +24,13 @@ import java.util.*;
 @Slf4j
 public class CheckRequestResultService {
 
+
+    /**
+     * 保存跳过字段，根据线程赋值
+     */
+    public static ThreadLocal<CheckDataStore> DATA_STORE = new ThreadLocal<>();
+
+
     public ResultData checkTwoResult(CheckResultDTO paramA, CheckResultDTO paramB, String checkFields){
 
         // 前置请求字段校验
@@ -40,11 +48,22 @@ public class CheckRequestResultService {
             return ResultDataUtil.paramEmpty("结果比对字段为空");
         }
         // 找到目标数据段进行匹配  => 没有该字段或者有该字段值为空 可以看为一样
-        JSONObject jsonA = JSON.parseObject(resultA);
-        JSONObject jsonB = JSON.parseObject(resultB);
+        JSONObject jsonA;
+        JSONObject jsonB;
+        try {
+            jsonA = JSON.parseObject(resultA);
+            jsonB = JSON.parseObject(resultB);
+        }
+        catch (Exception e){
+            log.error("将结果转换成 JSONObject 出错 {}",e.getMessage(),e);
+            return ResultDataUtil.successResult("将结果转换成 JSONObject 出错");
+        }
+
         for(String field : sortField){
+            // 清除错误路径
+            clearDiffPath();
             if (!compareData(jsonA,jsonB,field)){
-                return ResultDataUtil.successResult("数据不一致,字段 "+field);
+                return ResultDataUtil.successResult("数据不一致,字段 " + getDiffFieldPath(DATA_STORE.get().getDiffPath()));
             }
         }
         // 这里需要对结果进行比对   方法有一下几种
@@ -64,9 +83,12 @@ public class CheckRequestResultService {
             for (i = 0; i < fields.length - 1; i++){
                 valueA = valueA.getJSONObject(fields[i]);
                 valueB = valueB.getJSONObject(fields[i]);
+                // 置入请求路径
+                pushDiffPath(fields[i]);
             }
             a = valueA.get(fields[i]);
             b = valueB.get(fields[i]);
+            pushDiffPath(fields[i]);
         }
         catch (Exception e){
             log.error("获取数据出错，异常信息 {}",e.getMessage(),e);
@@ -75,7 +97,14 @@ public class CheckRequestResultService {
         return compareObject(a,b,fields[i]);
     }
 
-    //  TODO JSONArray 考虑
+    /**
+     * 比较两个对象的字段 有以下几种情况
+     * 1、都为 jsonArray  2、都为基本类型 8+1  3、都为jsonObject  4、
+     * @param a
+     * @param b
+     * @param field
+     * @return
+     */
     public boolean compareObject(Object a, Object b,String field){
 
         if (a instanceof JSONArray){
@@ -120,10 +149,17 @@ public class CheckRequestResultService {
 
     public boolean compareJsonData(JSONObject jsonA, JSONObject jsonB){
         for(Map.Entry<String,Object> entry: jsonA.entrySet()){
+            Set<String> excludeFields = DATA_STORE.get().getExcludeFields();
+            if (!Objects.isNull(excludeFields) && excludeFields.contains(entry.getKey())){
+                log.info("当前字段 {} 在排除字段中",entry.getKey());
+                continue;
+            }
+            pushDiffPath(entry.getKey());
             if (!compareObject(jsonA.get(entry.getKey()), jsonB.get(entry.getKey()), entry.getKey())){
                 log.info("不一致数据字段 {}",entry.getKey());
                 return false;
             }
+            popDiffPath();
         }
         return true;
     }
@@ -131,6 +167,34 @@ public class CheckRequestResultService {
     public boolean checkFieldIsEmpty(CheckResultDTO param){
         return Objects.isNull(param) || Objects.isNull(param.getUrl()) || Objects.isNull(param.getType()) ;
     }
+
+
+    public static void clearDiffPath(){
+        if (Objects.isNull(DATA_STORE.get().getDiffPath())){
+            DATA_STORE.get().setDiffPath(new Stack<>());
+        }
+        else {
+            DATA_STORE.get().getDiffPath().clear();
+        }
+    }
+
+    public static void pushDiffPath(String path){
+        if (Objects.isNull(DATA_STORE.get().getDiffPath())){
+            DATA_STORE.get().setDiffPath(new Stack<>());
+        }
+        DATA_STORE.get().getDiffPath().push(path);
+    }
+
+    public static String popDiffPath(){
+        if (Objects.isNull(DATA_STORE.get().getDiffPath()) || DATA_STORE.get().getDiffPath().size() <= 0){
+            log.error("逻辑错误，栈为空或长度小于1");
+            return null;
+        }
+        return DATA_STORE.get().getDiffPath().pop();
+    }
+
+
+
 
 
     public static String getQueryData(CheckResultDTO param){
@@ -163,6 +227,16 @@ public class CheckRequestResultService {
         });
         return fields;
     }
+
+    public static String getDiffFieldPath(Stack<String> stack){
+        StringBuilder builder = new StringBuilder();
+        while (stack.size() > 0){
+            builder.insert(0,stack.pop());
+            builder.insert(0,"=>");
+        }
+        return builder.toString();
+    }
+
 
 
     public static void main(String[] args) {

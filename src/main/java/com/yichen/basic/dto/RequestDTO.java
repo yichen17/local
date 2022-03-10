@@ -42,4 +42,7 @@ public class RequestDTO {
     @ApiModelProperty(name = "checkFields", value = "校验字段,多字段以分号分隔", dataType = "String", required = true, example = "data.account;data.customer")
     private String  checkFields;
 
+    @ApiModelProperty(name = "excludeFields", value = "不需要匹配的字段，以分号分隔", dataType = "String", required = true, example = "label;isLableMember;isPzscLable")
+    private String excludeFields;
+
 }
