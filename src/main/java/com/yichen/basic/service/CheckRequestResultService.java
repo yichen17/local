@@ -82,8 +82,8 @@ public class CheckRequestResultService {
             if (b instanceof JSONArray){
                 JSONArray arrayA = (JSONArray) a;
                 JSONArray arrayB = (JSONArray) b;
-                if (arrayA.size() != arrayB.size()){
-                    log.info("数组长度不一致数据字段 {}",field);
+                if (arrayA.size() > arrayB.size()){
+                    log.info("a长度小于b，长度不一致数据字段 {}",field);
                     return false;
                 }
                 for (int i=0;i<arrayA.size();i++){

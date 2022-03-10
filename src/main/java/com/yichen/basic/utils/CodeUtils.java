@@ -1,5 +1,8 @@
 package com.yichen.basic.utils;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+
 /**
  * @author Qiuxinchao
  * @version 1.0
@@ -51,8 +54,13 @@ public class CodeUtils {
         return buffer.toString();
     }
 
-    public static void main(String[] args) {
-        System.out.println(gbEncoding("鄢群芳"));
+    public static void main(String[] args)throws Exception {
+//        System.out.println(gbEncoding("鄢群芳"));
+        String s = "%E6%9C%8B%E5%8F%8B";
+        System.out.println(URLDecoder.decode(s,"UTF-8"));
+
+        System.out.println(URLEncoder.encode("朋友","UTF-8"));
+
     }
 
 }

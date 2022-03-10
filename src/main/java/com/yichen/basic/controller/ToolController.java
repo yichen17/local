@@ -1,5 +1,6 @@
 package com.yichen.basic.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.yichen.basic.dto.RequestDTO;
 import com.yichen.basic.dto.ResultData;
 import com.yichen.basic.dto.ResultDataUtil;
@@ -53,13 +54,27 @@ public class ToolController extends BaseController{
         return ResultDataUtil.successResult(s);
     }
 
-    @PostMapping(value = "/checkTwoResult",produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/checkTwoRequestResult",produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "两接口数据返回结果比对 => 可用于数据重构  =>  b中必须包含a中所有字段")
-    public ResultData checkTwoResult(@RequestBody RequestDTO dto){
+    public ResultData checkTwoRequestResult(@RequestBody RequestDTO dto){
         // 这里需要对结果进行比对   方法有一下几种
         // 1、重写对象的toString()方法   =>  需要自己构造逻辑
         // 2、构建工具类对类对象逐字段比对 => 返回结构通常为json格式字符串  => 比对逻辑
         // 3、调用三方工具类   =>  是否有现成的
         return checkRequestResultService.checkTwoResult(dto.getDtoA(),dto.getDtoB(),dto.getCheckFields());
     }
+
+    @PostMapping(value = "/checkTwoStringResult",produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiOperation(value = "比对两个字符串格式的json数据是否一样，b包含a中所有")
+    public ResultData checkTwoStringResult(
+            @RequestParam("jsonA")@ApiParam(name = "jsonA", value = "字符串形式a", example = "{\"name\":\"shanliang\"}")String jsonA,
+            @RequestParam("jsonB")@ApiParam(name = "jsonB", value = "字符串形式b", example = "{\"name\":\"yichen\"}")String jsonB){
+        boolean isSame = checkRequestResultService.compareJsonData(JSON.parseObject(jsonA), JSON.parseObject(jsonB));
+        if (isSame){
+            return ResultDataUtil.successResult("比对一致");
+        }
+        return ResultDataUtil.successResult("比对不一致");
+    }
+
+
 }

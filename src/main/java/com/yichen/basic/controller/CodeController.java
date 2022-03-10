@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URLEncoder;
+
 /**
  * @author Qiuxinchao
  * @version 1.0
@@ -37,5 +39,40 @@ public class CodeController extends BaseController{
 //        unicode=unicode.replaceAll("#","\\\\");
         return CodeUtils.decodeUnicode(unicode);
     }
+
+
+    @PostMapping("/urlEncode")
+    @ApiOperation(value = "urlEncode 加密")
+    public String urlEncode(@RequestParam(name = "s")
+                            @ApiParam(name = "s", value = "加密字符串", example = "朋友")String s,
+                            @RequestParam(name = "codeType")
+                            @ApiParam(name = "codeType", value = "编码类型", example = "UTF-8")String codeType){
+        logger.info("url encoder 入参 {} {}",s,codeType);
+        try{
+            return URLEncoder.encode(s,codeType);
+        }
+        catch (Exception e){
+            logger.error("url encoder 出错 {}",e.getMessage(),e);
+        }
+        return null;
+    }
+
+
+    @PostMapping("/urlDecode")
+    @ApiOperation(value = "urlDecode 解密")
+    public String urlDecode(@RequestParam(name = "s")
+                            @ApiParam(name = "s", value = "解密字符串", example = "%E6%9C%8B%E5%8F%8B")String s,
+                            @RequestParam(name = "codeType")
+                            @ApiParam(name = "codeType", value = "编码类型", example = "UTF-8")String codeType){
+        logger.info("url decode 入参 {} {}",s,codeType);
+        try{
+            return URLEncoder.encode(s,codeType);
+        }
+        catch (Exception e){
+            logger.error("url decode 出错 {}",e.getMessage(),e);
+        }
+        return null;
+    }
+
 
 }
