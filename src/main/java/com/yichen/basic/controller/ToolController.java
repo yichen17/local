@@ -1,10 +1,7 @@
 package com.yichen.basic.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.yichen.basic.dto.CheckDataStore;
-import com.yichen.basic.dto.RequestDTO;
-import com.yichen.basic.dto.ResultData;
-import com.yichen.basic.dto.ResultDataUtil;
+import com.yichen.basic.dto.*;
 import com.yichen.basic.service.CheckRequestResultService;
 import com.yichen.basic.utils.DateUtils;
 import io.swagger.annotations.Api;
@@ -82,6 +79,25 @@ public class ToolController extends BaseController{
             return ResultDataUtil.successResult("比对一致");
         }
         return ResultDataUtil.successResult("比对不一致");
+    }
+
+    @PostMapping(value = "/interfaceSwitch",produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "新老接口切换结果比对 => 请求入参、请求方式一致，仅请求地址即反参可能变化  =>  新接口必须包含旧接口返回的所有内容，可额外增加")
+    public ResultData interfaceSwitch(@RequestBody InterfaceSwitchDTO dto){
+        Set<String> excludeFields ;
+        if (Objects.isNull(dto.getExcludeFields())){
+            excludeFields = new HashSet<>();
+        }
+        else {
+            excludeFields = new HashSet<String>(Arrays.asList(dto.getExcludeFields().split(";")));
+        }
+        CheckDataStore dataStore = CheckDataStore.builder().excludeFields(excludeFields).diffPath(new Stack<>()).build();
+        CheckRequestResultService.DATA_STORE.set(dataStore);
+        RequestDTO.CheckResultDTO oldInterface = RequestDTO.CheckResultDTO.builder().url(dto.getOldUrl()).body(dto.getBody()).header(dto.getHeader()).type(dto.getType()).build();
+        RequestDTO.CheckResultDTO newInterface = RequestDTO.CheckResultDTO.builder().url(dto.getNewUrl()).body(dto.getBody()).header(dto.getHeader()).type(dto.getType()).build();
+        ResultData result = checkRequestResultService.checkTwoResult(oldInterface, newInterface, dto.getCheckFields());
+        CheckRequestResultService.DATA_STORE.remove();
+        return result;
     }
 
 
