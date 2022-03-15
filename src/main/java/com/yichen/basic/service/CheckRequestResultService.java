@@ -98,6 +98,7 @@ public class CheckRequestResultService {
         }
         catch (Exception e){
             log.error("获取数据出错，异常信息 {}",e.getMessage(),e);
+            pushDiffPath("checkFields => " + field + "  字段错误，请确认路径");
             return false;
         }
         return compareObject(a,b,fields[i]);
