@@ -41,7 +41,7 @@ public class CheckRequestResultService {
         String resultA = getQueryData(paramA);
         String resultB = getQueryData(paramB);
         log.info("A 请求结果 {}",JSON.toJSONString(resultA));
-        log.info("B请求结果 {}",JSON.toJSONString(resultB));
+        log.info("B 请求结果 {}",JSON.toJSONString(resultB));
         // 排序结果校验字段，先根据分号切分在根据字段长度排序
         String[] sortField = getSortField(checkFields);
         if (Objects.isNull(sortField) || sortField.length == 0){
@@ -63,7 +63,13 @@ public class CheckRequestResultService {
             // 清除错误路径
             clearDiffPath();
             if (!compareData(jsonA,jsonB,field)){
-                return ResultDataUtil.successResult("数据不一致,字段 " + getDiffFieldPath(DATA_STORE.get().getDiffPath()));
+//                return ResultDataUtil.successResult("数据不一致,字段 " + getDiffFieldPath(DATA_STORE.get().getDiffPath()));
+                Map<String,Object> res = new HashMap<>(4);
+                String checkResult = "数据不一致,字段 " + getDiffFieldPath(DATA_STORE.get().getDiffPath());
+                res.put("checkResult",checkResult);
+                res.put("a result",jsonA);
+                res.put("b result",jsonB);
+                return ResultDataUtil.successResult("数据不一致",res);
             }
         }
         // 这里需要对结果进行比对   方法有一下几种
@@ -201,17 +207,22 @@ public class CheckRequestResultService {
 
         log.info("请求入参 {}",JSON.toJSONString(param));
 
-        if (HttpRequestEnum.POST_FORM.getType().equals(param.getType().toUpperCase())){
-            return HttpRequest.post(param.getUrl()).addHeaders(param.getHeader())
-                    .form(param.getBody()).timeout(5000).execute().body();
+        try {
+            if (HttpRequestEnum.POST_FORM.getType().equals(param.getType().toUpperCase())){
+                return HttpRequest.post(param.getUrl()).addHeaders(param.getHeader())
+                        .form(param.getBody()).timeout(10000).execute().body();
+            }
+            if (HttpRequestEnum.POST_JSON.getType().equals(param.getType().toUpperCase())){
+                return HttpRequest.post(param.getUrl()).addHeaders(param.getHeader())
+                        .body(JSON.toJSONString(param.getBody())).timeout(10000).execute().body();
+            }
+            if (HttpRequestEnum.GET.getType().equals(param.getType().toUpperCase())){
+                return HttpRequest.get(param.getUrl()).addHeaders(param.getHeader())
+                        .body(JSON.toJSONString(param.getBody())).timeout(10000).execute().body();
+            }
         }
-        if (HttpRequestEnum.POST_JSON.getType().equals(param.getType().toUpperCase())){
-            return HttpRequest.post(param.getUrl()).addHeaders(param.getHeader())
-                    .body(JSON.toJSONString(param.getBody())).timeout(5000).execute().body();
-        }
-        if (HttpRequestEnum.GET.getType().equals(param.getType().toUpperCase())){
-            return HttpRequest.get(param.getUrl()).addHeaders(param.getHeader())
-                    .body(JSON.toJSONString(param.getBody())).timeout(5000).execute().body();
+        catch (Exception e){
+            log.error("出现错误 {}",e.getMessage(),e);
         }
 
         return null;

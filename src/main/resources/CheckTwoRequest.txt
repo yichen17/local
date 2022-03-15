@@ -11,7 +11,7 @@
       "accountId": "22041166666925628"
     },
     "header": {
-      "token": "e3150300b7f70000f4b5d0db7dd54f33aae9ba473baff344"
+      "token": "e4150300dd12020021fb2b388bbd474ea3de27fb5428a78e"
     },
     "type": "POST_FORM",
     "url": "http://onecard-user-api-test.sc.9f.cn/user/select/selectByFiled"
@@ -26,7 +26,7 @@
       "accountId": "22041166666925628"
     },
     "header": {
-      "token": "e3150300b7f70000f4b5d0db7dd54f33aae9ba473baff344"
+      "token": "e4150300dd12020021fb2b388bbd474ea3de27fb5428a78e"
     },
     "type": "POST_FORM",
     "url": "http://spring-webflux-api-gateway-test.sc.9f.cn/userapi/userinfo/select/selectByField"
@@ -101,3 +101,23 @@
   }
 }
 
+
+============================  合并接口 case  ==================================================================
+{
+  "body": {
+    "mobile": "18600296208",
+    "selectType": "120ac",
+    "certId": "340827199309120020",
+    "customerId": "1170259320",
+    "md5Mobile": "05c24b607ffaaa2bfb71cf205504f4a1",
+    "accountId": "22041166666925628"
+  },
+  "checkFields": "data.account;data.customer",
+  "excludeFields": "label;isLableMember;isPzscLable;createTime;updatedTime;realNameTime;birthDay",
+  "header": {
+    "token": "e41503001f950100ffe97453112d47649ab842e3d7a1078d"
+  },
+  "newUrl": "http://spring-webflux-api-gateway-test.sc.9f.cn/userapi/userinfo/select/selectByField",
+  "oldUrl": "http://onecard-user-api-test.sc.9f.cn/user/select/selectByFiled",
+  "type": "POST_FORM"
+}
