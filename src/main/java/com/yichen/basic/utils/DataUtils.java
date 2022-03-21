@@ -1,7 +1,8 @@
 package com.yichen.basic.utils;
 
 import com.alibaba.fastjson.JSON;
-import com.yichen.basic.model.RequestEncode;
+import com.yichen.basic.dto.RequestEncode;
+import com.yichen.basic.dto.TestEncode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
@@ -28,7 +29,7 @@ public class DataUtils {
      * @param data 请求入参
      * @return 解密成功或者不需要解密-true    其他-false
      */
-    protected boolean putDecodeDateToParam(RequestEncode data){
+    public static boolean putDecodeDateToParam(RequestEncode data){
         if (StringUtils.isNotNull(data.getEncryptedInfo())){
             if (log.isInfoEnabled()) {
                 log.info("满足解密复制要求,入参 {}",JSON.toJSONString(data));
@@ -64,7 +65,7 @@ public class DataUtils {
      * @param request 原有请求入参
      * @return 填充数据成功-true  其他-false
      */
-    protected boolean fillMapToRequest(Map<String,String> decodeData, RequestEncode request ){
+    public static boolean fillMapToRequest(Map<String,String> decodeData, RequestEncode request ){
         // 获取定义的所有字段  private protected  public
         Set<String> names = Arrays.stream(request.getClass().getDeclaredFields()).flatMap(p -> Stream.of(p.getName())).collect(Collectors.toSet());
         for (Map.Entry<String,String> entry : decodeData.entrySet()){
@@ -91,7 +92,7 @@ public class DataUtils {
      * @param encryptedInfo 加密数据
      * @return 解密后的 Map 数据
      */
-    protected Map<String, String> getDesData(String encryptedInfo) throws Exception {
+    public static Map<String, String> getDesData(String encryptedInfo) throws Exception {
         String decryptData = decryptData(encryptedInfo);
         if (log.isInfoEnabled()) {
             log.info("【huxiao】解密数据：{}", decryptData);
@@ -104,7 +105,7 @@ public class DataUtils {
      * @param encryptedInfo 原加密数据
      * @return 解密后的数据
      */
-    public String decryptData(String encryptedInfo)  throws Exception{
+    public static String decryptData(String encryptedInfo)  throws Exception{
         return new String(Method.decryptecb_aes(Common.cryptoCipher(encryptedInfo),
                 Common.hex2byte("9b6f011102e72b8a420b9246a6a96bee")));
     }
@@ -115,7 +116,7 @@ public class DataUtils {
      * @param formData 原表单数据
      * @return map转义结果
      */
-    public  Map<String,String> convertFormDataToMap(String formData) throws Exception{
+    public static  Map<String,String> convertFormDataToMap(String formData) throws Exception{
         String decryptData = decryptData(formData);
         Map<String,String> result = new HashMap<>(16);
         List<String> items = commaSplit(decryptData);
@@ -138,7 +139,7 @@ public class DataUtils {
      * @param formData 表单数据
      * @return 节分后的map数据
      */
-    public  List<String> commaSplit(String formData){
+    public static  List<String> commaSplit(String formData){
         List<String> result = new ArrayList<>(16);
         Stack<Integer> stack = new Stack<>();
         int start=0,i;
@@ -174,19 +175,20 @@ public class DataUtils {
         return result;
     }
 
-//	public static void main(String[] args) throws Exception {
-//		BaseController baseController = new BaseController();
-//		CheckBeforeLoginListRequestEntity entity = new CheckBeforeLoginListRequestEntity();
-//		entity.setEncryptedInfo("AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4");
-//		baseController.putDecodeDateToParam(entity);
-//		System.out.println("111");
-//		Map<String, String> desData = baseController.getDesData("AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4");
-//		Map<String, String> desData1 = baseController.getDesData("hyHy/P8pabsyUHt2yX4V9Td1VDC5PNd9MradMEFDQyLOC8f08z6dw9MKV7S97qQllKJPE9qSUuJb3CvkCo5rHCnGjLdXS9oSh6gSTx6L6To2hhShDUxqRVEDzoR6ZRJP6KH2NSq8k/RoMSAvectobwxDyqzdw942OHC2ygVOFKzEAZuC+35mtV/1IQ7bbcMoMOggR0VLEZdtF3X6VbLDvv6ry4zzFp+KuaoQgKNA16o8WrctjImCJwXKIVO29F5Ozy36s39a4Q61S06uD/tuaTxhNsNQpK3kYo8YVE2uTyZ9fJYSmbJfkZgzdMnwfxKbQ+Amf6w5ew7xh0sY6zYRnL1psAxsX6BQFDe/tfFrmMxMvkBjiCU8i3N1neUrcyRvj55u6TzFdxkhk3B1HJGZSA==");
-//		String encryptedInfo = "AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4";
-//		encryptedInfo = new String(Method.decryptecb_aes(Common.cryptoCipher(encryptedInfo),
-//				Common.hex2byte("9b6f011102e72b8a420b9246a6a96bee")));
-//		CheckBeforeLoginListRequestEntity checkBeforeLoginListRequestEntity = FastJsonUtils.fromJson(encryptedInfo, CheckBeforeLoginListRequestEntity.class);
-//		System.out.println(checkBeforeLoginListRequestEntity);
-//	}
+	public static void main(String[] args) throws Exception {
+		DataUtils baseController = new DataUtils();
+		TestEncode entity = new TestEncode();
+		entity.setEncryptedInfo("AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4");
+
+		baseController.putDecodeDateToParam(entity);
+		System.out.println("111");
+		Map<String, String> desData = baseController.getDesData("AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4");
+		Map<String, String> desData1 = baseController.getDesData("hyHy/P8pabsyUHt2yX4V9Td1VDC5PNd9MradMEFDQyLOC8f08z6dw9MKV7S97qQllKJPE9qSUuJb3CvkCo5rHCnGjLdXS9oSh6gSTx6L6To2hhShDUxqRVEDzoR6ZRJP6KH2NSq8k/RoMSAvectobwxDyqzdw942OHC2ygVOFKzEAZuC+35mtV/1IQ7bbcMoMOggR0VLEZdtF3X6VbLDvv6ry4zzFp+KuaoQgKNA16o8WrctjImCJwXKIVO29F5Ozy36s39a4Q61S06uD/tuaTxhNsNQpK3kYo8YVE2uTyZ9fJYSmbJfkZgzdMnwfxKbQ+Amf6w5ew7xh0sY6zYRnL1psAxsX6BQFDe/tfFrmMxMvkBjiCU8i3N1neUrcyRvj55u6TzFdxkhk3B1HJGZSA==");
+		String encryptedInfo = "AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4";
+		encryptedInfo = new String(Method.decryptecb_aes(Common.cryptoCipher(encryptedInfo),
+				Common.hex2byte("9b6f011102e72b8a420b9246a6a96bee")));
+		TestEncode TestEncode = JSON.parseObject(encryptedInfo, TestEncode.class);
+		System.out.println(TestEncode);
+	}
 
 }

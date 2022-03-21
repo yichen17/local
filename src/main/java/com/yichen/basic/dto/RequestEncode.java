@@ -1,4 +1,4 @@
-package com.yichen.basic.model;
+package com.yichen.basic.dto;
 
 /**
  * @author Qiuxinchao
