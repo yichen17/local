@@ -10,7 +10,7 @@ import lombok.Data;
  * @describe 测试加密数据
  */
 @Data
-public class TestEncode implements RequestEncode{
+public class TestEncode implements RequestEncodeAES,RequestEncodeRSA {
 
     @ApiModelProperty(value = "手机号", required = false)
     private String mobile;
@@ -24,6 +24,9 @@ public class TestEncode implements RequestEncode{
     private String encryptedInfo;
     @ApiModelProperty(value = "h5加密数据", required = false)
     private String encryptedInfoForH5;
+
+    //  以下为 h5 测试字段
+    private String channel;
 
 
 }

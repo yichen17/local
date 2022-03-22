@@ -1,9 +1,9 @@
 package com.yichen.basic.utils;
 
 import com.alibaba.fastjson.JSON;
-import com.yichen.basic.dto.RequestEncode;
-import com.yichen.basic.dto.TestEncode;
+import com.yichen.basic.dto.RequestEncodeAES;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.codec.binary.Base64;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -19,25 +19,63 @@ import java.util.stream.Stream;
 @Slf4j
 public class DataUtils {
 
+    /**
+     * form 数据拆分 逗号
+     */
     private static final Character COMMA = ',';
+    /**
+     * form 数据拆分 等号
+     */
     private static final String EQUAL = "=";
+    /**
+     * form 数据拆分 左大括号
+     */
     private static final Character LEFT_BRACKET = '{';
+    /**
+     * form 数据拆分  右大括号
+     */
     private static final Character RIGHT_BRACKET = '}';
+    /**
+     * 加解密方式 aes
+     */
+    public static final String AES = "aes";
+    /**
+     * 加解密方式 rsa
+     */
+    public static final String RSA = "rsa";
 
     /**
      * 将加密后的数据解密，同时填充或替换原有请求入参
      * @param data 请求入参
      * @return 解密成功或者不需要解密-true    其他-false
      */
-    public static boolean putDecodeDateToParam(RequestEncode data){
-        if (StringUtils.isNotNull(data.getEncryptedInfo())){
+    public static boolean putDecodeDateToParam(Object data, String encryptData, String type){
+
+
+        if (StringUtils.isNotNull(encryptData)){
             if (log.isInfoEnabled()) {
                 log.info("满足解密复制要求,入参 {}",JSON.toJSONString(data));
             }
+
+            try {
+                if (AES.equals(type)){
+                    encryptData = decryptDataAes(encryptData);
+                }
+                else if (RSA.equals(type)){
+                    encryptData = decryptDataRas(encryptData);
+                }
+            }
+            catch (Exception e){
+                log.error("数据解密出错 type {} error {}",type,e.getMessage(),e);
+                return true;
+            }
+
+            log.info("解密后的数据为 {}",encryptData);
+
             Map<String,String> decodeData = null;
             // 先测试 json 格式数据解密
             try{
-                decodeData = getDesData(data.getEncryptedInfo());
+                decodeData = getDesData(encryptData);
                 // 将 map 中的数据再次置入实体
                 return fillMapToRequest(decodeData, data);
             }
@@ -46,7 +84,7 @@ public class DataUtils {
             }
             // form 表单格式数据解密
             try {
-                decodeData = convertFormDataToMap(data.getEncryptedInfo());
+                decodeData = convertFormDataToMap(encryptData);
                 // 将 map 中的数据再次置入实体
                 return fillMapToRequest(decodeData, data);
             }
@@ -65,7 +103,7 @@ public class DataUtils {
      * @param request 原有请求入参
      * @return 填充数据成功-true  其他-false
      */
-    public static boolean fillMapToRequest(Map<String,String> decodeData, RequestEncode request ){
+    public static boolean fillMapToRequest(Map<String,String> decodeData, Object request ){
         // 获取定义的所有字段  private protected  public
         Set<String> names = Arrays.stream(request.getClass().getDeclaredFields()).flatMap(p -> Stream.of(p.getName())).collect(Collectors.toSet());
         for (Map.Entry<String,String> entry : decodeData.entrySet()){
@@ -93,11 +131,7 @@ public class DataUtils {
      * @return 解密后的 Map 数据
      */
     public static Map<String, String> getDesData(String encryptedInfo) throws Exception {
-        String decryptData = decryptData(encryptedInfo);
-        if (log.isInfoEnabled()) {
-            log.info("【huxiao】解密数据：{}", decryptData);
-        }
-        return JSON.parseObject(decryptData, Map.class);
+        return JSON.parseObject(encryptedInfo, Map.class);
     }
 
     /**
@@ -105,9 +139,19 @@ public class DataUtils {
      * @param encryptedInfo 原加密数据
      * @return 解密后的数据
      */
-    public static String decryptData(String encryptedInfo)  throws Exception{
+    public static String decryptDataAes(String encryptedInfo)  throws Exception{
         return new String(Method.decryptecb_aes(Common.cryptoCipher(encryptedInfo),
                 Common.hex2byte("9b6f011102e72b8a420b9246a6a96bee")));
+    }
+
+    /**
+     * rsa 解密数据
+     * @param encryptInfo 解密数据
+     * @return 解密后的字符串
+     */
+    public static String decryptDataRas(String encryptInfo) throws Exception{
+        byte[] plaintext = RsaUtilsForH5.decryptByPrivateKey(Base64.decodeBase64(encryptInfo), RsaUtilsForH5.privateKey);
+        return new String(plaintext);
     }
 
     /**
@@ -117,9 +161,8 @@ public class DataUtils {
      * @return map转义结果
      */
     public static  Map<String,String> convertFormDataToMap(String formData) throws Exception{
-        String decryptData = decryptData(formData);
         Map<String,String> result = new HashMap<>(16);
-        List<String> items = commaSplit(decryptData);
+        List<String> items = commaSplit(formData);
 
         for(String item : items){
             String[] keyValue = item.split(EQUAL);
@@ -176,19 +219,19 @@ public class DataUtils {
     }
 
 	public static void main(String[] args) throws Exception {
-		DataUtils baseController = new DataUtils();
-		TestEncode entity = new TestEncode();
-		entity.setEncryptedInfo("AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4");
-
-		baseController.putDecodeDateToParam(entity);
-		System.out.println("111");
-		Map<String, String> desData = baseController.getDesData("AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4");
-		Map<String, String> desData1 = baseController.getDesData("hyHy/P8pabsyUHt2yX4V9Td1VDC5PNd9MradMEFDQyLOC8f08z6dw9MKV7S97qQllKJPE9qSUuJb3CvkCo5rHCnGjLdXS9oSh6gSTx6L6To2hhShDUxqRVEDzoR6ZRJP6KH2NSq8k/RoMSAvectobwxDyqzdw942OHC2ygVOFKzEAZuC+35mtV/1IQ7bbcMoMOggR0VLEZdtF3X6VbLDvv6ry4zzFp+KuaoQgKNA16o8WrctjImCJwXKIVO29F5Ozy36s39a4Q61S06uD/tuaTxhNsNQpK3kYo8YVE2uTyZ9fJYSmbJfkZgzdMnwfxKbQ+Amf6w5ew7xh0sY6zYRnL1psAxsX6BQFDe/tfFrmMxMvkBjiCU8i3N1neUrcyRvj55u6TzFdxkhk3B1HJGZSA==");
-		String encryptedInfo = "AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4";
-		encryptedInfo = new String(Method.decryptecb_aes(Common.cryptoCipher(encryptedInfo),
-				Common.hex2byte("9b6f011102e72b8a420b9246a6a96bee")));
-		TestEncode TestEncode = JSON.parseObject(encryptedInfo, TestEncode.class);
-		System.out.println(TestEncode);
+//		DataUtils baseController = new DataUtils();
+//		TestEncode entity = new TestEncode();
+//		entity.setEncryptedInfo("AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4");
+//
+//		baseController.putDecodeDateToParam(entity);
+//		System.out.println("111");
+//		Map<String, String> desData = baseController.getDesData("AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4");
+//		Map<String, String> desData1 = baseController.getDesData("hyHy/P8pabsyUHt2yX4V9Td1VDC5PNd9MradMEFDQyLOC8f08z6dw9MKV7S97qQllKJPE9qSUuJb3CvkCo5rHCnGjLdXS9oSh6gSTx6L6To2hhShDUxqRVEDzoR6ZRJP6KH2NSq8k/RoMSAvectobwxDyqzdw942OHC2ygVOFKzEAZuC+35mtV/1IQ7bbcMoMOggR0VLEZdtF3X6VbLDvv6ry4zzFp+KuaoQgKNA16o8WrctjImCJwXKIVO29F5Ozy36s39a4Q61S06uD/tuaTxhNsNQpK3kYo8YVE2uTyZ9fJYSmbJfkZgzdMnwfxKbQ+Amf6w5ew7xh0sY6zYRnL1psAxsX6BQFDe/tfFrmMxMvkBjiCU8i3N1neUrcyRvj55u6TzFdxkhk3B1HJGZSA==");
+//		String encryptedInfo = "AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4";
+//		encryptedInfo = new String(Method.decryptecb_aes(Common.cryptoCipher(encryptedInfo),
+//				Common.hex2byte("9b6f011102e72b8a420b9246a6a96bee")));
+//		TestEncode TestEncode = JSON.parseObject(encryptedInfo, TestEncode.class);
+//		System.out.println(TestEncode);
 	}
 
 }

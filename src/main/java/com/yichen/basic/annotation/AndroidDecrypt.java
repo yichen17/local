@@ -1,5 +1,7 @@
 package com.yichen.basic.annotation;
 
+import com.yichen.basic.dto.RequestEncodeAES;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -14,4 +16,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AndroidDecrypt {
+
+    /**
+     * 加密接口， 从中获取加密数据
+     * @return 加密接口类
+     */
+    Class<?> encryptInterface() default RequestEncodeAES.class;
+
 }

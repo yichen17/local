@@ -19,6 +19,13 @@ public class StringUtils {
         return false;
     }
 
+    public static boolean isEmpty(String str){
+        if (str == null || str.length() == 0){
+            return true;
+        }
+        return false;
+    }
+
 
     public static boolean isBlank(final CharSequence cs) {
         int strLen;
