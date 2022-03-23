@@ -5,6 +5,7 @@ import com.yichen.basic.dto.RequestEncodeAES;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.codec.binary.Base64;
 
+import javax.swing.text.StringContent;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -104,23 +105,100 @@ public class DataUtils {
      * @return 填充数据成功-true  其他-false
      */
     public static boolean fillMapToRequest(Map<String,String> decodeData, Object request ){
+        Map<String,Field> fields = new HashMap<>();
+        Set<String> names = new HashSet<>();
         // 获取定义的所有字段  private protected  public
-        Set<String> names = Arrays.stream(request.getClass().getDeclaredFields()).flatMap(p -> Stream.of(p.getName())).collect(Collectors.toSet());
+        getAllDeclareFieldAndNames(request,fields,names);
         for (Map.Entry<String,String> entry : decodeData.entrySet()){
             // 前置校验 如果是多余字段则跳出   => 不然后面会报错 NoSuchFieldException
             if (!names.contains(entry.getKey())){
                 continue;
             }
             try {
-                Field declaredField = request.getClass().getDeclaredField(entry.getKey());
+                Field declaredField = fields.get(entry.getKey());
                 declaredField.setAccessible(true);
                 declaredField.set(request,entry.getValue());
-            } catch (NoSuchFieldException | IllegalAccessException e) {
+            } catch (IllegalAccessException e) {
                 log.error("小鱼 解密赋值出错 {}",e.getMessage(),e);
                 return true;
             }
         }
         return false;
+    }
+    /**
+     * 获取定义的所有属性名以及 属性名-属性 关系map (包括父类的，如果子类和父类有同一个属性，则子类优先)
+     * @param object 查询对象
+     * @param fields 属性名-属性 关系 map
+     * @param names 属性名
+     */
+    public static void getAllDeclareFieldAndNames(Object object, Map<String,Field> fields, Set<String> names ){
+        // 获取定义的所有字段  private protected  public  => 无法获取父类中定义的属性
+        Field[] declaredFields = object.getClass().getDeclaredFields();
+        for (Field field : declaredFields){
+            names.add(field.getName());
+            fields.put(field.getName(),field);
+        }
+        //  获取父类属性和名称
+        Class<?> superclass = object.getClass().getSuperclass();
+        if (superclass != null && !superclass.equals(Object.class) ){
+            getAllDeclareFieldAndNames(superclass,fields,names);
+        }
+    }
+
+    /**
+     * 获取定义的所有属性名以及 属性名-属性 关系map (包括父类的，如果子类和父类有同一个属性，则子类优先)
+     * @param object 查询对象
+     * @param fields 属性名-属性 关系 map
+     * @param names 属性名
+     */
+    public static void getAllDeclareFieldAndNames(Class<?> object, Map<String,Field> fields, Set<String> names ){
+        // 获取定义的所有字段  private protected  public  => 无法获取父类中定义的属性
+        Field[] declaredFields = object.getDeclaredFields();
+        for (Field field : declaredFields){
+            // 同名的优先父类中定义的
+            if (!names.contains(field.getName())){
+                names.add(field.getName());
+                fields.put(field.getName(),field);
+            }
+        }
+        //  获取父类属性和名称
+        Class<?> superclass = object.getSuperclass();
+        if (superclass != null && !superclass.equals(Object.class) ){
+            getAllDeclareFieldAndNames(superclass, fields, names);
+        }
+    }
+
+
+    /**
+     * 获取该类型对象的所有属性(包括父类的)
+     * @param object 对象
+     * @return 改对象的所有属性
+     */
+    public static Set<String> getAllDeclareFieldName(Object object){
+        // 获取定义的所有字段  private protected  public  => 无法获取父类中定义的属性
+        Set<String> names = Arrays.stream(object.getClass().getDeclaredFields()).flatMap(p -> Stream.of(p.getName())).collect(Collectors.toSet());
+        //  获取父类属性
+        Class<?> superclass = object.getClass().getSuperclass();
+        if (superclass != null && !superclass.equals(Object.class) ){
+            names.addAll(getAllDeclareFieldName(superclass));
+        }
+        return names;
+    }
+
+    /**
+     * 获取该类型对象的所有属性(包括父类的)
+     * @param object 对象
+     * @return 改对象的所有属性
+     */
+    public static Set<String> getAllDeclareFieldName(Class<?> object){
+        // 获取定义的所有字段  private protected  public  => 无法获取父类中定义的属性
+        Set<String> names = Arrays.stream(object.getDeclaredFields()).flatMap(p -> Stream.of(p.getName())).collect(Collectors.toSet());
+        //  获取父类属性
+        Class<?> superclass = object.getSuperclass();
+        if (superclass != null && !superclass.equals(Object.class) ){
+            names.addAll(getAllDeclareFieldName(superclass));
+        }
+        return names;
     }
 
 
