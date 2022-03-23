@@ -1,11 +1,9 @@
 package com.yichen.basic.utils;
 
 import com.alibaba.fastjson.JSON;
-import com.yichen.basic.dto.RequestEncodeAES;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.codec.binary.Base64;
 
-import javax.swing.text.StringContent;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -288,7 +286,13 @@ public class DataUtils {
             }
         }
         if (deviation == 1){
-            result.add(formData.substring(start,formData.length()-1));
+            // 只有一个字段的场景
+            if (start == 0){
+                result.add(formData.substring(start+1, formData.length()-1));
+            }
+            else {
+                result.add(formData.substring(start,formData.length()-1));
+            }
         }
         else {
             result.add(formData.substring(start));
