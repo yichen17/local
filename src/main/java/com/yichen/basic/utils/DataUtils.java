@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.codec.binary.Base64;
 
 import java.lang.reflect.Field;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -228,7 +229,7 @@ public class DataUtils {
      */
     public static String decryptDataRas(String encryptInfo) throws Exception{
         byte[] plaintext = RsaUtilsForH5.decryptByPrivateKey(Base64.decodeBase64(encryptInfo), RsaUtilsForH5.privateKey);
-        return URLEncoder.encode(new String(plaintext),"utf-8");
+        return URLDecoder.decode(new String(plaintext),"utf8");
     }
 
     /**
