@@ -1,0 +1,4 @@
+nohup java -Xmx256m -Xms256m -XX:+PrintGCDetails -Xloggc:./gc.log  -jar -Dspring.profiles.active=prod  basic-0.0.1-SNAPSHOT.jar   > ./logs/local.log 2>&1  &
+# nohup java -Xmx256m -Xms256m  -jar -Dspring.profiles.active=prod  basic-0.0.1-SNAPSHOT.jar   > ./logs/local.log 2>&1  &
+# java -Xmx256m -Xms256m  -jar -Dspring.profiles.active=prod  basic-0.0.1-SNAPSHOT.jar
+# nohup java -XX:NativeMemoryTracking=detail -Xmn90m  -Xmx256m -Xms256m -XX:MetaspaceSize=80m -XX:MaxMetaspaceSize=80m -XX:CompressedClassSpaceSize=80m  -XX:+PrintGCDetails -Xloggc:./gc.log  -jar -Dspring.profiles.active=prod  basic-0.0.1-SNAPSHOT.jar   > ./logs/local.log 2>&1  &
