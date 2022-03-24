@@ -46,6 +46,7 @@ public class DataUtils {
     public static final String RSA = "rsa";
 
     /**
+     * TODO 最好区分开  JSON格式解密 或者 FORM格式解密
      * 将加密后的数据解密，同时填充或替换原有请求入参
      * @param data 请求入参
      * @return 解密成功或者不需要解密-true    其他-false

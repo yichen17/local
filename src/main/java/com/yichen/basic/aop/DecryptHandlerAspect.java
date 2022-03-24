@@ -13,6 +13,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
@@ -22,10 +23,12 @@ import java.lang.reflect.Method;
  * @version 1.0
  * @date 2022/3/21 16:55
  * @describe 数据解密 切面
+ * @apiNote Order()   切面优先级，越小的越早执行，参考 https://blog.csdn.net/Aeve_imp/article/details/93098524
  */
 @Aspect
 @Component
 @Slf4j
+@Order(-999)
 public class DecryptHandlerAspect {
 
 //    @Pointcut("@annotation(com.yichen.basic.annotation.AndroidDecrypt) ||  @annotation(com.yichen.basic.annotation.H5Decrypt)")
