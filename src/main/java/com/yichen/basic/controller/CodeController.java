@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 
 /**
@@ -66,7 +67,7 @@ public class CodeController extends BaseController{
                             @ApiParam(name = "codeType", value = "编码类型", example = "UTF-8")String codeType){
         logger.info("url decode 入参 {} {}",s,codeType);
         try{
-            return URLEncoder.encode(s,codeType);
+            return URLDecoder.decode(s,codeType);
         }
         catch (Exception e){
             logger.error("url decode 出错 {}",e.getMessage(),e);
