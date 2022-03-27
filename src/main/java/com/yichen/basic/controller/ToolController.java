@@ -32,7 +32,7 @@ public class ToolController extends BaseController{
     @PostMapping(value = "/timeToTimestamp",produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ApiOperation(value = "yyyy-MM-dd hh:mm:ss 时间转为时间戳")
     public ResultData timeToTimestamp(
-            @RequestParam(required=true,name = "time") @ApiParam(name = "time",value = "yyyy-MM-dd hh:mm:ss格式时间",example = "2022-01-19 00:00:00" ) String time
+            @RequestParam(required=true,name = "time") @ApiParam(name = "time",value = "yyyy-MM-dd HH:mm:ss格式时间",example = "2022-01-19 00:00:00" ) String time
     ){
         logger.info("时间转为时间戳，入参 {}",time);
         String s = DateUtils.timeToTimestamp(time);

@@ -20,7 +20,7 @@ public class DateUtils {
     /**
      * 24小时制展示时间
      */
-    private static final String BASIC_TIME_PATTERN_24 = "yyyy-MM-dd hh:mm:ss";
+    private static final String BASIC_TIME_PATTERN_24 = "yyyy-MM-dd HH:mm:ss";
 
     /**
      * 日期转时间戳
