@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.codec.binary.Base64;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,6 +44,21 @@ public class DataUtils {
      * 加解密方式 rsa
      */
     public static final String RSA = "rsa";
+    /**
+     * 基础类型转换   将 String 转为基本类型
+     * key = 基本类    value = 转换方法 => parse
+     */
+    public static final Map<Class<?>, String> BASIC_CONVERT  = new HashMap<>(8);
+
+    static {
+        BASIC_CONVERT.put(Double.class,"parseDouble");
+        BASIC_CONVERT.put(Short.class,"parseShort");
+        BASIC_CONVERT.put(Long.class,"parseLong");
+        BASIC_CONVERT.put(Integer.class,"parseInt");
+        BASIC_CONVERT.put(Byte.class,"parseByte");
+        BASIC_CONVERT.put(Float.class,"parseFloat");
+    }
+
 
     /**
      * TODO 最好区分开  JSON格式解密 或者 FORM格式解密
@@ -74,7 +89,7 @@ public class DataUtils {
 
             log.info("解密后的数据为 {}",encryptData);
 
-            Map<String,String> decodeData = null;
+            Map<String,Object> decodeData = null;
             // 先测试 json 格式数据解密
             try{
                 decodeData = getDesData(encryptData);
@@ -105,27 +120,57 @@ public class DataUtils {
      * @param request 原有请求入参
      * @return 填充数据成功-true  其他-false
      */
-    public static boolean fillMapToRequest(Map<String,String> decodeData, Object request ){
+    public static boolean fillMapToRequest(Map<String,Object> decodeData, Object request ){
         Map<String,Field> fields = new HashMap<>();
         Set<String> names = new HashSet<>();
         // 获取定义的所有字段  private protected  public
         getAllDeclareFieldAndNames(request,fields,names);
-        for (Map.Entry<String,String> entry : decodeData.entrySet()){
+        for (Map.Entry<String,Object> entry : decodeData.entrySet()){
             // 前置校验 如果是多余字段则跳出   => 不然后面会报错 NoSuchFieldException
             if (!names.contains(entry.getKey())){
                 continue;
             }
-            try {
-                Field declaredField = fields.get(entry.getKey());
-                declaredField.setAccessible(true);
-                declaredField.set(request,entry.getValue());
-            } catch (IllegalAccessException e) {
-                log.error("小鱼 解密赋值出错 {}",e.getMessage(),e);
-                return true;
+            // 如果填充字段失败，则直接跳出
+            if (fillDataToFieldError(fields.get(entry.getKey()),request,entry.getValue())){
+                return false;
             }
         }
-        return false;
+        return true;
     }
+
+    /**
+     * 将数据填充到指定字段
+     * @param field 字段
+     * @param target 对象
+     * @param value 值
+     * @return 填充成功 false，填充失败true
+     */
+    public static boolean fillDataToFieldError(Field field, Object target, Object value){
+        try {
+            // 字段类型校验
+            if (field.getType().isAssignableFrom(value.getClass())){
+                field.setAccessible(true);
+                field.set(target,value);
+                return false;
+            }
+            // 如果类型不一致，进行基础转换
+            if (value.getClass().isAssignableFrom(String.class)){
+                log.info("开始尝试基本类型转换");
+                java.lang.reflect.Method method = field.getType().getDeclaredMethod(BASIC_CONVERT.get(field.getType()), String.class);
+                field.setAccessible(true);
+                field.set(target,method.invoke(null,value));
+                return false;
+            }
+            return true;
+        }
+        catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException exception){
+            log.error("对象对应属性赋值出错，字段名 {}, 字段类型 {}, 入参类型 {}, 错误信息 {}",
+                    field.getName(),field.getType().getName(),value.getClass().getName(), exception.getMessage(),exception);
+        }
+        return true;
+    }
+
+
     /**
      * 获取定义的所有属性名以及 属性名-属性 关系map (包括父类的，如果子类和父类有同一个属性，则子类优先)
      * @param object 查询对象
@@ -209,7 +254,7 @@ public class DataUtils {
      * @param encryptedInfo 加密数据
      * @return 解密后的 Map 数据
      */
-    public static Map<String, String> getDesData(String encryptedInfo) throws Exception {
+    public static Map<String,Object> getDesData(String encryptedInfo) throws Exception {
         return JSON.parseObject(encryptedInfo, Map.class);
     }
 
@@ -239,8 +284,8 @@ public class DataUtils {
      * @param formData 原表单数据
      * @return map转义结果
      */
-    public static  Map<String,String> convertFormDataToMap(String formData) throws Exception{
-        Map<String,String> result = new HashMap<>(16);
+    public static  Map<String,Object> convertFormDataToMap(String formData) throws Exception{
+        Map<String,Object> result = new HashMap<>(16);
         List<String> items = commaSplit(formData);
 
         for(String item : items){
