@@ -132,10 +132,10 @@ public class DataUtils {
             }
             // 如果填充字段失败，则直接跳出
             if (fillDataToFieldError(fields.get(entry.getKey()),request,entry.getValue())){
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     /**
@@ -154,11 +154,11 @@ public class DataUtils {
                 return false;
             }
             // 如果类型不一致，进行基础转换
-            if (value.getClass().isAssignableFrom(String.class)){
+            if (StringUtils.isNotNull(BASIC_CONVERT.get(field.getType())) && value.getClass().isAssignableFrom(String.class)){
                 log.info("开始尝试基本类型转换");
                 java.lang.reflect.Method method = field.getType().getDeclaredMethod(BASIC_CONVERT.get(field.getType()), String.class);
                 field.setAccessible(true);
-                field.set(target,method.invoke(null,value));
+                field.set(target,method.invoke(null, (String)value));
                 return false;
             }
             return true;

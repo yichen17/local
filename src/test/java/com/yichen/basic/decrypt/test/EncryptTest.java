@@ -7,6 +7,7 @@ import com.yichen.basic.utils.Base64;
 import com.yichen.basic.utils.Common;
 import com.yichen.basic.utils.DataUtils;
 import com.yichen.basic.utils.Method;
+import io.swagger.models.auth.In;
 import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -99,6 +100,32 @@ public class EncryptTest {
         System.out.println(d.getClass().getName());
         System.out.println(d.getClass().getCanonicalName());
         System.out.println(d.getClass().getTypeName());
+    }
+
+    /**
+     * 测试 String 转基本数据类型
+     * @throws Exception
+     */
+    @Test
+    public void basicConvert() throws Exception{
+        String s = "1111";
+        System.out.println("Byte => " + Byte.parseByte(s));
+        System.out.println("Long => " + Long.parseLong(s));
+        System.out.println("Short => " + Short.parseShort(s));
+        System.out.println("Double => " + Double.parseDouble(s));
+        System.out.println("Float => " + Float.parseFloat(s));
+        System.out.println("Integer => " + Integer.parseInt(s));
+    }
+
+    /**
+     * 测试 rsa 解密
+     * @throws Exception
+     */
+    @Test
+    public void RsaDecrypt() throws Exception{
+//        String s = "KY6QQe/PXkX6CjFeJ1UDUM6/YeyD4Y1FB9VXG1LqOnoiOSuqrCOyQWcW7m77zuh7ra5d2c8TcFG27vmD74t/wfHG/WJxzC/2LA0abrKRFiD+bpOmp89mw7lWSK9zlp7a9fh7zovq/ZN+cRE0aUy1PTP3M/eWTqoTUmJkUEEr4m4l1ad5LSjCGC1siks2yEAiikxuVnAF4JSXK5UuWGOHnBb9WRa5vq5W+vn8PfJxgZ3pv8TWoDjwvXUlmvembhiyreBgMAfrZqOR03o4unXFA5qxnVJUqe9SIe1lVuhqLd0mZRRBrkztGjv3oFlwLF/owYsCNkuV9H74m+Bv8IyjuQ==";
+        String s = "BYNBDd9cKaGNddD6k3/z3tkc22CpEQpJ+19BCAWm5oAtsITYCKOyon87bbCFeh5B3cT1mF375IOLPjmjLx2jL/pOE5ajw+QPuGfRE4Hl2rXnF9VagvC4qCiAZc2B6vAxizsr3qfR0LGds+deVfqj6pfUt7s5yljVXWoPNk1Q2XqMhCm/umrKaeiFdita9wK1FaGQQW6FwW3+ksyyGYnwAdaT9zTKzfGuR5gg+mXl24XyW9s0WAr882aHfmBn3zpZuKts/EXphnQTTDXbfK5OzDSD/gO+Xh6k2q4kIkbjMHBtX4xfxJUEepJBZVWMbiv5tiyF14VCdS83oroOyGpGIw==";
+        System.out.println(DataUtils.decryptDataRas(s));
     }
 
 
