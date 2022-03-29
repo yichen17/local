@@ -50,7 +50,7 @@ public class EncryptTest {
         Student student = new Student();
         student.setAddress("浙江温州");
         student.setAge("18");
-        student.setName("奕晨");
+//        student.setName("奕晨");
         byte[] bytes = Method.encryptecb_aes(JSON.toJSONString(student).getBytes(StandardCharsets.UTF_8), Common.hex2byte("9b6f011102e72b8a420b9246a6a96bee"));
         String encodeString = new String(Base64.encode(bytes));
         System.out.println(encodeString);
@@ -134,8 +134,11 @@ public class EncryptTest {
      */
     @Test
     public void AesDecrypt() throws Exception{
-        String s = "9WpOVC5VU12zuJJzWXz0OhoYyn51qXxtZi0doJoLCBAyosZKVaYGVUiPpi2HBBIaQW3f7zl5agw5o4xGNbE7o4Ulv9q4ffkrziOScPw2sDDnauWHu7/gEQ0H0ImrOYmC0lqcn+LUqEZei/ANQFj4yg==";
-        System.out.println(DataUtils.decryptDataAes(s));
+        String s = "AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4";
+        String decryptDataRas = DataUtils.decryptDataAes(s);
+        System.out.println(decryptDataRas);
+        Map<String, Object> stringObjectMap = DataUtils.convertFormDataToMap(decryptDataRas);
+        System.out.println(JSON.toJSONString(stringObjectMap));
     }
 
 

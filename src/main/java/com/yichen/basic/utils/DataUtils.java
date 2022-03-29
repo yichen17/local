@@ -289,13 +289,19 @@ public class DataUtils {
         List<String> items = commaSplit(formData);
 
         for(String item : items){
-            String[] keyValue = item.split(EQUAL);
+            // 前置校验  => 数据为空   => 理论上不存在
+            if (StringUtils.isEmpty(item)){
+                continue;
+            }
+            // 不能根据 = 解密   =>  原因：数据中可能就有等号 => 示例：数据通过 Base64加密
+            int position = item.indexOf(EQUAL);
             // 表示没有value
-            if (keyValue.length == 1){
-                result.put(keyValue[0].trim(),"");
+            if ((position == -1) || (position == item.length() -1)){
+                result.put(item.substring(0, item.length() - 1).trim(),"");
             }
             else {
-                result.put(keyValue[0].trim(),keyValue[1].trim());
+                // 正常格式  A=b
+                result.put(item.substring(0,position).trim(),item.substring(position+1));
             }
         }
         return result;

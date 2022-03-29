@@ -115,7 +115,7 @@
   "checkFields": "data.account;data.customer",
   "excludeFields": "label;isLableMember;isPzscLable;createTime;updatedTime;realNameTime;birthDay",
   "header": {
-    "token": "e41503001f950100ffe97453112d47649ab842e3d7a1078d"
+    "token": "e41503000fc0010032624943be174bbf9d5fbbb02e01a18e"
   },
   "newUrl": "http://spring-webflux-api-gateway-test.sc.9f.cn/userapi/userinfo/select/selectByField",
   "oldUrl": "http://onecard-user-api-test.sc.9f.cn/user/select/selectByFiled",
