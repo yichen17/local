@@ -128,6 +128,16 @@ public class EncryptTest {
         System.out.println(DataUtils.decryptDataRas(s));
     }
 
+    /**
+     * 测试 aes 解密
+     * @throws Exception
+     */
+    @Test
+    public void AesDecrypt() throws Exception{
+        String s = "9WpOVC5VU12zuJJzWXz0OhoYyn51qXxtZi0doJoLCBAyosZKVaYGVUiPpi2HBBIaQW3f7zl5agw5o4xGNbE7o4Ulv9q4ffkrziOScPw2sDDnauWHu7/gEQ0H0ImrOYmC0lqcn+LUqEZei/ANQFj4yg==";
+        System.out.println(DataUtils.decryptDataAes(s));
+    }
+
 
 
 }
