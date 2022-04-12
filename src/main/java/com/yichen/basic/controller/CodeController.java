@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * @author Qiuxinchao
@@ -73,6 +75,20 @@ public class CodeController extends BaseController{
             logger.error("url decode 出错 {}",e.getMessage(),e);
         }
         return null;
+    }
+
+    @PostMapping("base64Encode")
+    @ApiOperation(value = "base64 加密数据")
+    public String base64Encode(@RequestParam("data") @ApiParam(name = "data",value = "加密数据",example = "奕晨")String data){
+        logger.info("base 64 加密入参 {}",data);
+        return Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @PostMapping("base64Decode")
+    @ApiOperation(value = "base64 解密数据")
+    public String base64Decode(@RequestParam("data") @ApiParam(name = "data",value = "解密数据",example = "奕晨")String data){
+        logger.info("base 64 解密入参 {}",data);
+        return new String(Base64.getDecoder().decode(data));
     }
 
 

@@ -16,7 +16,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @describe 解密配置
  *     参考解决办法  https://yaoyuanyy.github.io/2019/09/21/springboot%20HandlerIntercepter%E6%8B%A6%E6%88%AA%E5%99%A8%E5%AE%9E%E7%8E%B0%E4%BF%AE%E6%94%B9request%20body%E6%95%B0%E6%8D%AE/
  */
-@Configuration
+//@Configuration
 public class DecryptConfiguration implements WebMvcConfigurer {
 
 
