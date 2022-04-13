@@ -52,6 +52,15 @@ public class ToolController extends BaseController{
         return ResultDataUtil.successResult(s);
     }
 
+    @GetMapping(value = "/getCurrentTimestamp")
+    @ApiOperation(value = "获取当前时间的时间戳")
+    public ResultData getCurrentTimestamp(){
+        logger.info("获取当前时间的时间戳");
+        return ResultDataUtil.successResult("当前时间的时间戳",System.currentTimeMillis());
+    }
+
+
+
     @PostMapping(value = "/checkTwoRequestResult",produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "两接口数据返回结果比对 => 可用于数据重构  =>  b中必须包含a中所有字段")
     public ResultData checkTwoRequestResult(@RequestBody RequestDTO dto){
