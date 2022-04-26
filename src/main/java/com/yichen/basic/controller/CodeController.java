@@ -5,10 +5,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -90,6 +87,21 @@ public class CodeController extends BaseController{
         logger.info("base 64 解密入参 {}",data);
         return new String(Base64.getDecoder().decode(data));
     }
+
+    @GetMapping("/charToInt")
+    @ApiOperation(value = "char 转为 int")
+    public int charToInt(@RequestParam("c") @ApiParam(name = "c",value = "待转换成int值的char",example = "=") char c){
+        logger.info("char to int 入参 {}",c);
+        return (int)c;
+    }
+
+    @GetMapping("/intToChar")
+    @ApiOperation(value = "char 转为 int")
+    public char intToChar(@RequestParam("i") @ApiParam(name = "i",value = "待转换成char的int值",example = "32") int i){
+        logger.info("int to char 入参 {}",i);
+        return (char)i;
+    }
+
 
 
 }
