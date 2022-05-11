@@ -1,6 +1,7 @@
 package com.yichen.basic.dto;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -10,6 +11,7 @@ import lombok.Data;
  * @describe 测试加密数据
  */
 @Data
+@Builder
 public class TestEncode implements RequestEncodeAES,RequestEncodeRSA {
 
     @ApiModelProperty(value = "手机号", required = false)

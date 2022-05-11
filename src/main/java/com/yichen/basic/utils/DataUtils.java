@@ -1,12 +1,14 @@
 package com.yichen.basic.utils;
 
 import com.alibaba.fastjson.JSON;
+import com.yichen.basic.dto.TestEncode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.codec.binary.Base64;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,6 +51,10 @@ public class DataUtils {
      * key = 基本类    value = 转换方法 => parse
      */
     public static final Map<Class<?>, String> BASIC_CONVERT  = new HashMap<>(8);
+    /**
+     * android 版本加解密key
+     */
+    public static final String ANDROID_KEY = "9b6f011102e72b8a420b9246a6a96bee";
 
     static {
         BASIC_CONVERT.put(Double.class,"parseDouble");
@@ -354,20 +360,67 @@ public class DataUtils {
         return result;
     }
 
+    /**
+     * 将数据进行安卓方式的加密
+     * @param data 待加密数据
+     * @return 加密后的字符串
+     */
+    public static String androidEncrypt(String data){
+        try {
+            String result = new String(com.yichen.basic.utils.Base64.encode(Method.encryptecb_aes(data.getBytes(StandardCharsets.UTF_8),
+                    Common.hex2byte(DataUtils.ANDROID_KEY))), StandardCharsets.UTF_8);
+            log.info("android 加密后数据 {}",result);
+            return result;
+        }
+        catch (Exception e){
+            log.error("android 加密数据出错 {}",e.getMessage(),e);
+        }
+        return null;
+    }
+
+    /**
+     * 将数据进行h5方式的加密
+     * @param data 待加密数据
+     * @return 加密后的字符串
+     */
+    public static String h5Encrypt(String data){
+        try {
+            byte[] bytes = RsaUtilsForH5.encryptByPublicKey(JSON.toJSONBytes(data), RsaUtilsForH5.publicKey);
+            return org.apache.commons.codec.binary.Base64.encodeBase64String(bytes);
+        }
+        catch (Exception e){
+            log.error("h5 加密数据出错 {}",e.getMessage(),e);
+        }
+        return null;
+    }
+
+
+
 	public static void main(String[] args) throws Exception {
-//		DataUtils baseController = new DataUtils();
-//		TestEncode entity = new TestEncode();
-//		entity.setEncryptedInfo("AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4");
-//
-//		baseController.putDecodeDateToParam(entity);
-//		System.out.println("111");
-//		Map<String, String> desData = baseController.getDesData("AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4");
-//		Map<String, String> desData1 = baseController.getDesData("hyHy/P8pabsyUHt2yX4V9Td1VDC5PNd9MradMEFDQyLOC8f08z6dw9MKV7S97qQllKJPE9qSUuJb3CvkCo5rHCnGjLdXS9oSh6gSTx6L6To2hhShDUxqRVEDzoR6ZRJP6KH2NSq8k/RoMSAvectobwxDyqzdw942OHC2ygVOFKzEAZuC+35mtV/1IQ7bbcMoMOggR0VLEZdtF3X6VbLDvv6ry4zzFp+KuaoQgKNA16o8WrctjImCJwXKIVO29F5Ozy36s39a4Q61S06uD/tuaTxhNsNQpK3kYo8YVE2uTyZ9fJYSmbJfkZgzdMnwfxKbQ+Amf6w5ew7xh0sY6zYRnL1psAxsX6BQFDe/tfFrmMxMvkBjiCU8i3N1neUrcyRvj55u6TzFdxkhk3B1HJGZSA==");
-//		String encryptedInfo = "AAQ6dZFdYfGczz1W/EQd+jXjqpN4T3Qz35g8dtngeiYwepmpy80O/q0l8xaQQ52y/0jpBtSrtjTGrCwcmfAXwQvbzu2gzVr+Kcvyax5bj7QQOtA7JmMiDf9w3G5AxCiyApSCBKFcsUELowGxxupL6cFkGezYm8BH1LrKGDlZsLKU/5PJccIo+aii3BPmEyLA4w9JjJkiCbm8rfj+lJby/VR0bw7/xK5cnU24BkQYJBV64laQxuXDj22v2I8KbwMyywJSDRJvntaK/HobxrP0qONZy1kO0z6MoHP5gOsEflh0n5zvnQvmGTGwoSQ/Pu4JTgfLCQdLjBdEUKPtrgbDsadoM1NoupiopfyPexAihUCHFvx5l+Hdx80Th776PmN4";
-//		encryptedInfo = new String(Method.decryptecb_aes(Common.cryptoCipher(encryptedInfo),
-//				Common.hex2byte("9b6f011102e72b8a420b9246a6a96bee")));
-//		TestEncode TestEncode = JSON.parseObject(encryptedInfo, TestEncode.class);
-//		System.out.println(TestEncode);
+
+        // android数据加密
+        // 现成数据
+//        String encodeData = "{\"mobile\":\"15034542237\",\"registrationId\":\"13065ffa4ef84de99a5\",\"userData\":\"{\\\"androidId\\\":\\\"51887e004735a068\\\",\\\"appTime\\\":\\\"1650338254405\\\",\\\"appVersion\\\":\\\"4.0.8\\\",\\\"deviceId\\\":\\\"989547d5-9ef1-32c2-a5cf-2a357ab0dda4\\\",\\\"deviceSource\\\":\\\"bangcle\\\",\\\"deviceType\\\":\\\"android\\\",\\\"iccid\\\":\\\"获取失败,获取失败;46002,获取失败\\\",\\\"idfa\\\":\\\"5f99c9106254380\\\",\\\"imei\\\":\\\"N\\/A\\\",\\\"imsi\\\":\\\"N\\/A\\\",\\\"latitude\\\":\\\"35.403373\\\",\\\"longitude\\\":\\\"110.689077\\\",\\\"mac\\\":\\\"A4:50:46:D8:14:83\\\",\\\"mobile\\\":\\\"15034542237\\\",\\\"netType\\\":\\\"wifi\\\",\\\"networkIp\\\":\\\"192.168.0.102\\\",\\\"networkType\\\":\\\"wifi\\\",\\\"oaid\\\":\\\"5f99c9106254380\\\",\\\"routeMac\\\":\\\"A4:50:46:D8:14:83\\\",\\\"startId\\\":\\\"1650338229758\\\",\\\"systemCode\\\":\\\"WK\\\",\\\"systemName\\\":\\\"android\\\",\\\"systemVersion\\\":\\\"10\\\",\\\"udid\\\":\\\"989547d5-9ef1-32c2-a5cf-2a357ab0dda4\\\",\\\"userId\\\":\\\"\\\",\\\"wifiMac\\\":\\\"f8:8c:21:ce:8d:af\\\"}\",\"loginType\":\"2\",\"system_environment\":\"1\",\"dataMap\":{\"isContract\":\"0\"},\"checkPrivacyPolicy\":\"1\",\"hasReadPrivacyPolicy\":\"1\",\"privacyPolicyName\":\"\",\"verifyCode\":\"226730\",\"channel\":\"WEB\",\"inviteCode\":\"\",\"openId\":\"\",\"udid\":\"989547d5-9ef1-32c2-a5cf-2a357ab0dda4\"}";
+//        String result = new String(com.yichen.basic.utils.Base64.encode(Method.encryptecb_aes(encodeData.getBytes(StandardCharsets.UTF_8), Common.hex2byte(DataUtils.ANDROID_KEY))), StandardCharsets.UTF_8);
+        // 手动构造
+        TestEncode testEncode = TestEncode.builder().mobile("13733621659").build();
+        String result = new String(com.yichen.basic.utils.Base64.encode(Method.encryptecb_aes(JSON.toJSONBytes(testEncode), Common.hex2byte(DataUtils.ANDROID_KEY))), StandardCharsets.UTF_8);
+        System.out.println(result);
+
+        // android数据解密
+//        String s = "2814owLq9Cf6yS275qvZjlhwqOtLzg3ssDb+ImPeUhcbhPj28W6pOGZDK5MM4/6e6vI1sE9lNPWM10XIJd36dFNh7Bp3U3+r01zYLsb/wFdsixuEJr0G850pWYqID+5qrA1THdAYTAncCN6b87QS4KI5SR+qwx6JWYRxi+7WBUeTn1X8UkmpH1/hhqoX08VtVVgKMKTVXj4a42t4Ri/l5abs20xwnMFtlARLem/Fu8RjpZQ+3p2oxqK0e3MCnO7UyBUkWsB2XmaVc8jG4aJk7+8mTM95Fl3HpHW4+CMe02BnEzePyxZ9PXDy7qnk6yXEbw8JQgkhESloqcBdpvHhkVphtRWUwGy4ti8Id5SdDr/HG7a/YeeHZchG1I8SAZahHIsZFP+n25/0WhBHR1PN8BCuaxuMjwkQA/5ketOQoSLFAPrB3oieVjygpr7vL4UpzEIwchslix+Rz3QaQhXXsSwuZ24op1vEHRHgFCfABzCDyYxcTcaiGgQFuoOiBONkoM8fflkZetBqtMysL8vb+E3k8kLU6/kTm6Ou2WUUyojjVU+/QIrZobOjeLFY8iBhsEn8fmzpXw02avWDa0/fcNAkwh//RbBGqP+baJN/qn4/oMuarypymP+BIIYtNU84M4Ckmiwzl5yyPkcL/IVGVBR478/+3xpRQ23vqe1usff4yHV0SU4hQI4JPozmK7CTvjI2I/rkR+08M4KS7p7iUOG2uzp143GLIfqMWElmQTN1Zm5nh2u8dyOlt4BKvIfNU7vgT2eDCuMCS3EeWCVaRYaP+EuCg5oooLIbovwURgYiHbUGE2sr2A6c88bA8FAgvCZNxOCmqjEy4nddTeZ+20ZBlqLQQXeSubGIYLKPs+N39yfqK0f0A2h1p9FKBNn94spyE7U7pn9ix6nMFag/kBUcpP4+CCOKVdFb6+TLE4I2Mi7O9NzH5xJE//PaVF3tDvw+bNdq0vS2jKz0gsMTOXiIbf4e8gcqpiIuBFWG2db9ZcF0xc4NBCZ4F1Pr6LpveZ3c3YZQ6M8YHCBUyC9EkhAcIH2xk/fpis8iRaNhU58RLt3ogYaX/1PrDlKe5aJqem2QnGOkWjYr1fAOok9yPWWkamc7HxsuXVGID4NNoJ6Q/GbtLnNcbhZ4nLC2lxSS3dh98nS6InRMUftvaeU1GuoUWHDtr+93Ce1VGMUWcEHxUHKKEvjyozr3CUj4K+55nnAyctL5XGEZFDPGuFRQvGnSw1Wazpf0pc394Eypozhi1+0Dm89qmJeuUezHFOZBkQapbr84KzDChB1kcco1Wb1DmaJXuKURypMlm6IrorRzj2Oy1hslZuOYJrUdAaD8Acbhl94B/din58PWs3PbbeG9zbe5fm0FQGYlWXKc3+dGUVM9duMn12rYYLwtM1eRE8vPGWLatR9VbviHLosGTPp63JD07ZOhlELEwqwBsP7JGQMUAjWVYoGmdC8NHmGGaq9CRx7kJ6rKyHR8JiXJpw==";
+//        String encodeData = new String(Common.cryptoCipher(s), StandardCharsets.UTF_8);
+//        System.out.println(encodeData);
+//        s = new String(Method.decryptecb_aes(Common.cryptoCipher(s), Common.hex2byte(DataUtils.ANDROID_KEY)));
+//        System.out.println(s);
+
+
+        // h5 数据加密
+//        TestEncode testEncode = TestEncode.builder().mobile("13733621659").build();
+//        byte[] bytes = RsaUtilsForH5.encryptByPublicKey(JSON.toJSONBytes(testEncode), RsaUtilsForH5.publicKey);
+//        System.out.println(org.apache.commons.codec.binary.Base64.encodeBase64String(bytes));
+
+
 	}
 
 }

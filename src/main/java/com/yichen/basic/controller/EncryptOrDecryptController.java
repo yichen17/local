@@ -8,6 +8,7 @@ import com.yichen.basic.utils.DataUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @Api(tags = "数据加解密")
 @RestController
 @RequestMapping("/crypt")
+@Slf4j
 public class EncryptOrDecryptController {
 
     @PostMapping("/testAES")
@@ -55,6 +57,24 @@ public class EncryptOrDecryptController {
                                 @ApiParam(name = "encrypt", value = "加密数据", example = "BYNBDd9cKaGNddD6k3/z3tkc22CpEQpJ+19BCAWm5oAtsITYCKOyon87bbCFeh5B3cT1mF375IOLPjmjLx2jL/pOE5ajw+QPuGfRE4Hl2rXnF9VagvC4qCiAZc2B6vAxizsr3qfR0LGds+deVfqj6pfUt7s5yljVXWoPNk1Q2XqMhCm/umrKaeiFdita9wK1FaGQQW6FwW3+ksyyGYnwAdaT9zTKzfGuR5gg+mXl24XyW9s0WAr882aHfmBn3zpZuKts/EXphnQTTDXbfK5OzDSD/gO+Xh6k2q4kIkbjMHBtX4xfxJUEepJBZVWMbiv5tiyF14VCdS83oroOyGpGIw==")String encrypt)throws Exception{
         return DataUtils.decryptDataRas(encrypt);
     }
+
+    @GetMapping(value = "/android/encrypt")
+    @ApiOperation(value = "android 数据加密")
+    public String androidEncrypt(@RequestParam @ApiParam(name = "data",value = "android 方式加密数据",
+            example = "{\"mobile\":\"13733621659\"}") String data){
+        log.info("android 数据加密 {}",data);
+        return DataUtils.androidEncrypt(data);
+    }
+
+
+    @GetMapping(value = "/h5/encrypt")
+    @ApiOperation(value = "h5 数据加密")
+    public String h5Encrypt(@RequestParam @ApiParam(name = "data",value = "h5 方式加密数据",
+            example = "{\"mobile\":\"13733621659\"}") String data){
+        log.info("h5 数据加密 {}",data);
+        return DataUtils.h5Encrypt(data);
+    }
+
 
 
 

@@ -5,13 +5,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * @author Qiuxinchao
@@ -74,6 +73,35 @@ public class CodeController extends BaseController{
         }
         return null;
     }
+
+    @PostMapping("base64Encode")
+    @ApiOperation(value = "base64 加密数据")
+    public String base64Encode(@RequestParam("data") @ApiParam(name = "data",value = "加密数据",example = "奕晨")String data){
+        logger.info("base 64 加密入参 {}",data);
+        return Base64.getEncoder().encodeToString(data.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @PostMapping("base64Decode")
+    @ApiOperation(value = "base64 解密数据")
+    public String base64Decode(@RequestParam("data") @ApiParam(name = "data",value = "解密数据",example = "奕晨")String data){
+        logger.info("base 64 解密入参 {}",data);
+        return new String(Base64.getDecoder().decode(data));
+    }
+
+    @GetMapping("/charToInt")
+    @ApiOperation(value = "char 转为 int")
+    public int charToInt(@RequestParam("c") @ApiParam(name = "c",value = "待转换成int值的char",example = "=") char c){
+        logger.info("char to int 入参 {}",c);
+        return (int)c;
+    }
+
+    @GetMapping("/intToChar")
+    @ApiOperation(value = "char 转为 int")
+    public char intToChar(@RequestParam("i") @ApiParam(name = "i",value = "待转换成char的int值",example = "32") int i){
+        logger.info("int to char 入参 {}",i);
+        return (char)i;
+    }
+
 
 
 }
