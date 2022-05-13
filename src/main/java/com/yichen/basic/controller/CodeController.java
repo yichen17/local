@@ -1,6 +1,7 @@
 package com.yichen.basic.controller;
 
 import com.yichen.basic.utils.CodeUtils;
+import com.yichen.basic.utils.EncryptUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -102,6 +103,23 @@ public class CodeController extends BaseController{
         return (char)i;
     }
 
+    @GetMapping("/signDecode")
+    @ApiOperation(value = "签名解密")
+    public String signDecode(@RequestParam @ApiParam(name = "str", value = "待解密字符串", example = "4DA6DB24A0F5912B60495B71D64E17F4")String str,
+                             @RequestParam @ApiParam(name = "salt", value = "盐值 账单密钥: pVrG+nGlxU4amKi39E6bTA== , api验签:M3A2OrXBF3ZcOFx0oCnZQ",
+                                     example = "pVrG+nGlxU4amKi39E6bTA==")String salt){
+        logger.info("签名解密入参 str {} salt {}", str, salt);
+        return EncryptUtil.getInstance().aesDecode(str, salt);
+    }
+
+    @GetMapping("signEncode")
+    @ApiOperation(value = "签名加密")
+    public String signEncode(@RequestParam @ApiParam(name = "str", value = "加密字符串", example = "3681765")String str,
+                             @RequestParam @ApiParam(name = "salt", value = "盐值 账单密钥: pVrG+nGlxU4amKi39E6bTA== , api验签:M3A2OrXBF3ZcOFx0oCnZQ",
+                                     example = "pVrG+nGlxU4amKi39E6bTA==")String salt){
+        logger.info("签名加密入参 str {} salt {}", str, salt);
+        return EncryptUtil.getInstance().aesEncode(str, salt);
+    }
 
 
 }
