@@ -59,6 +59,15 @@ public class ToolController extends BaseController{
         return ResultDataUtil.successResult("当前时间的时间戳",System.currentTimeMillis());
     }
 
+    @GetMapping(value = "/getUuid")
+    @ApiOperation(value = "获取随机生成的uuid")
+    public ResultData getUuid(@RequestParam @ApiParam(name = "type", value = "0表示一般，1表示替换-为空")Integer type){
+        logger.info("随机生成uuid type {}", type);
+        if (type == 1){
+            return ResultDataUtil.successResult("生成uuid成功",UUID.randomUUID().toString().replace("-", ""));
+        }
+        return ResultDataUtil.successResult("生成uuid成功",UUID.randomUUID().toString());
+    }
 
 
     @PostMapping(value = "/checkTwoRequestResult",produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_JSON_VALUE)
