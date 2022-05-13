@@ -61,9 +61,9 @@ public class ToolController extends BaseController{
 
     @GetMapping(value = "/getUuid")
     @ApiOperation(value = "获取随机生成的uuid")
-    public ResultData getUuid(@RequestParam @ApiParam(name = "type", value = "0表示一般，1表示替换-为空")Integer type){
+    public ResultData getUuid(@RequestParam @ApiParam(name = "type", value = "0表示一般，1表示替换-为空", example = "0")String type){
         logger.info("随机生成uuid type {}", type);
-        if (type == 1){
+        if ("1".equals(type)){
             return ResultDataUtil.successResult("生成uuid成功",UUID.randomUUID().toString().replace("-", ""));
         }
         return ResultDataUtil.successResult("生成uuid成功",UUID.randomUUID().toString());
