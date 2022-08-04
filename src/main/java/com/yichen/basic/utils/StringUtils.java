@@ -26,6 +26,10 @@ public class StringUtils {
         return false;
     }
 
+    public static boolean isNotEmpty(String str){
+        return !isEmpty(str);
+    }
+
 
     public static boolean isBlank(final CharSequence cs) {
         int strLen;

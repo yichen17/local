@@ -3,6 +3,7 @@ package com.yichen.basic.controller;
 import com.alibaba.fastjson.JSON;
 import com.yichen.basic.dto.*;
 import com.yichen.basic.service.CheckRequestResultService;
+import com.yichen.basic.utils.CacheUtils;
 import com.yichen.basic.utils.DateUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -10,6 +11,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -116,6 +118,27 @@ public class ToolController extends BaseController{
         ResultData result = checkRequestResultService.checkTwoResult(oldInterface, newInterface, dto.getCheckFields());
         CheckRequestResultService.DATA_STORE.remove();
         return result;
+    }
+
+    @PostMapping(value = "/constructCacheKey", produces = MediaType.APPLICATION_JSON_VALUE,consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE )
+    @ApiOperation(value = "根据规则生产缓存key")
+    public ResultData constructCacheKey(CacheKeyDTO dto){
+        logger.info("constructCacheKey 入参 {}", JSON.toJSONString(dto));
+        try {
+            CacheUtils.Type type = CacheUtils.Type.getType(dto.getType());
+            Assert.notNull(type, "类型不能为空");
+            switch (type){
+                case USER:
+                    return ResultDataUtil.successResult(CacheUtils.getKeyUser(dto.getModule(), dto.getKey()));
+                case ORDER:
+                    return ResultDataUtil.successResult(CacheUtils.getKeyOrder( dto.getModule(), dto.getKey()));
+                default:
+                    return ResultDataUtil.successResult("type 类型未匹配");
+            }
+        }
+        catch (Exception e){
+            return ResultDataUtil.errorResult(e.getMessage());
+        }
     }
 
 
