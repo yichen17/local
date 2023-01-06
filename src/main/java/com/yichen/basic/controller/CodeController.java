@@ -125,7 +125,7 @@ public class CodeController extends BaseController{
     @ApiOperation(value = "去除转义")
     public String signEncode(@RequestParam @ApiParam(name = "escapeStr", value = "转义字符串",
             example = "\"{\\\\\\\"name\\\\\\\":\\\\\\\"xiaoxu\\\\\\\",\\\\\\\"age\\\\\\\":\\\\\\\"27\\\\\\\"}\"\n")String escapeStr){
-        logger.info("签名加密入参 escapeStr {}", escapeStr);
+        logger.info("去除转义 escapeStr {}", escapeStr);
         return StringEscapeUtils.unescapeJava(escapeStr);
     }
 
