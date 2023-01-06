@@ -12,6 +12,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Objects;
 
 /**
  * @author Qiuxinchao
@@ -122,11 +123,17 @@ public class CodeController extends BaseController{
     }
 
     @GetMapping("escape")
-    @ApiOperation(value = "去除转义")
+    @ApiOperation(value = "去除所有转义(包含多层嵌套)")
     public String signEncode(@RequestParam @ApiParam(name = "escapeStr", value = "转义字符串",
             example = "\"{\\\\\\\"name\\\\\\\":\\\\\\\"xiaoxu\\\\\\\",\\\\\\\"age\\\\\\\":\\\\\\\"27\\\\\\\"}\"\n")String escapeStr){
-        logger.info("去除转义 escapeStr {}", escapeStr);
-        return StringEscapeUtils.unescapeJava(escapeStr);
+        logger.info("去除所有转义(包含多层嵌套) escapeStr {}", escapeStr);
+        String newStr = null;
+        do {
+            escapeStr = Objects.isNull(newStr) ? escapeStr : newStr;
+            newStr = StringEscapeUtils.unescapeJava(escapeStr);
+        }
+        while (!newStr.equals(escapeStr));
+        return StringEscapeUtils.unescapeJava(newStr);
     }
 
 
