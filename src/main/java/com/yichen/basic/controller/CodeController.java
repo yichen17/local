@@ -5,7 +5,7 @@ import com.yichen.basic.utils.EncryptUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.springframework.http.MediaType;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URLDecoder;
@@ -119,6 +119,14 @@ public class CodeController extends BaseController{
                                      example = "pVrG+nGlxU4amKi39E6bTA==")String salt){
         logger.info("签名加密入参 str {} salt {}", str, salt);
         return EncryptUtil.getInstance().aesEncode(str, salt);
+    }
+
+    @GetMapping("escape")
+    @ApiOperation(value = "去除转义")
+    public String signEncode(@RequestParam @ApiParam(name = "escapeStr", value = "转义字符串",
+            example = "\"{\\\\\\\"name\\\\\\\":\\\\\\\"xiaoxu\\\\\\\",\\\\\\\"age\\\\\\\":\\\\\\\"27\\\\\\\"}\"\n")String escapeStr){
+        logger.info("签名加密入参 escapeStr {}", escapeStr);
+        return StringEscapeUtils.unescapeJava(escapeStr);
     }
 
 
