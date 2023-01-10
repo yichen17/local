@@ -5,6 +5,7 @@ import com.yichen.basic.dto.*;
 import com.yichen.basic.service.CheckRequestResultService;
 import com.yichen.basic.utils.CacheUtils;
 import com.yichen.basic.utils.DateUtils;
+import com.yichen.basic.utils.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -15,6 +16,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Qiuxinchao
@@ -139,6 +141,20 @@ public class ToolController extends BaseController{
         catch (Exception e){
             return ResultDataUtil.errorResult(e.getMessage());
         }
+    }
+
+    @PostMapping(value = "/codeReplace")
+    @ApiOperation(value = "字段替换")
+    public ResultData codeReplace(@RequestParam @ApiParam(name = "str", value = "待处理字符串")String str,
+                                  @RequestParam @ApiParam(name = "splitCode", value = "切割字符")String splitCode,
+                                  @RequestParam @ApiParam(name = "delimiter", value = "间隔符号")String delimiter,
+                                    @RequestParam @ApiParam(name = "left", value = "左填充")String left,
+                                    @RequestParam @ApiParam(name = "right", value = "右填充")String right){
+        logger.info("codeReplace 入参 {} {} {}", splitCode, left, right);
+        if (StringUtils.containsEmpty(str)){
+            return ResultDataUtil.errorResult("必填参数为空");
+        }
+        return ResultDataUtil.successResult("处理成功", Arrays.stream(str.split(splitCode)).collect(Collectors.joining(delimiter, left, right)));
     }
 
 

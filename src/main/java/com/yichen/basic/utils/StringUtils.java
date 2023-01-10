@@ -1,5 +1,10 @@
 package com.yichen.basic.utils;
 
+import com.google.common.collect.Lists;
+
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 /**
  * @author Qiuxinchao
  * @version 1.0
@@ -42,6 +47,10 @@ public class StringUtils {
             }
         }
         return true;
+    }
+
+    public static boolean containsEmpty(String ...param){
+       return Arrays.stream(param).anyMatch(StringUtils::isEmpty);
     }
 
 }
