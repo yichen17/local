@@ -157,5 +157,19 @@ public class ToolController extends BaseController{
         return ResultDataUtil.successResult("处理成功", Arrays.stream(str.split(splitCode)).collect(Collectors.joining(delimiter, left, right)));
     }
 
+    @PostMapping(value = "/secondPower")
+    @ApiOperation(value = "二次幂")
+    public ResultData secondPower(@RequestParam @ApiParam(name = "times", value = "幂次数", defaultValue = "2")Integer times){
+        logger.info("二次幂计算入参{}", times);
+        if (Objects.isNull(times)){
+            return ResultDataUtil.errorResult("请输入幂次数");
+        }
+        if (times >= 0){
+            return ResultDataUtil.successResult("计算成功", 1 << times);
+        }
+        return ResultDataUtil.successResult("计算成功", 1.0 / (1 << (-times)));
+    }
+
+
 
 }
