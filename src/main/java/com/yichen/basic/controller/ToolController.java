@@ -170,6 +170,13 @@ public class ToolController extends BaseController{
         return ResultDataUtil.successResult("计算成功", 1.0 / (1 << (-times)));
     }
 
+    @PostMapping("/numberToChar")
+    @ApiOperation(value = "ascll码值转char字符")
+    public ResultData ascll2char(@RequestParam @ApiParam(name = "ascll", value = "ascll码值", defaultValue = "13")byte ascll){
+        logger.info("ascll码值转char字符入参: {}", ascll);
+        return ResultDataUtil.successResult("转换成功", (char)ascll);
+    }
+
 
 
 }
