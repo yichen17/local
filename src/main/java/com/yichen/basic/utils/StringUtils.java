@@ -53,4 +53,19 @@ public class StringUtils {
        return Arrays.stream(param).anyMatch(StringUtils::isEmpty);
     }
 
+    /**
+     * 标准化json字符串  有时候存在内部是个json的String，前后多了双引号，实例：
+     *      {"address":"{\"city\":\"上海市\",\"name\":\"上海\",\"province\":\"浙江省\"}","age":18}
+     * @param str
+     * @return
+     */
+    public static String normalizeJsonStr(String str){
+        str = str.replace("\"{", "{")
+                .replace("}\"", "}")
+                .replace("\"[", "[")
+                .replace("]\"", "]")
+                .replace("\\\"", "\"");
+        return str;
+    }
+
 }

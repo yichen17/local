@@ -177,6 +177,13 @@ public class ToolController extends BaseController{
         return ResultDataUtil.successResult("转换成功", (char)ascll);
     }
 
+    @PostMapping("/normalizeJsonStr")
+    @ApiOperation(value = "规整化字符串")
+    public String normalizeJsonStr(@RequestParam @ApiParam(name = "str", value = "待规整化字符串", defaultValue = "{\"address\":\"{\\\"city\\\":\\\"上海市\\\",\\\"name\\\":\\\"上海\\\",\\\"province\\\":\\\"浙江省\\\"}\",\"age\":18}")String str){
+        logger.info("规整化字符串入参: {}", str);
+        return StringUtils.normalizeJsonStr(str);
+    }
+
 
 
 }
