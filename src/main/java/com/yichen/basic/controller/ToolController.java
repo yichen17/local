@@ -1,6 +1,7 @@
 package com.yichen.basic.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.yichen.basic.constant.CommonConstants;
 import com.yichen.basic.dto.*;
 import com.yichen.basic.service.CheckRequestResultService;
 import com.yichen.basic.utils.CacheUtils;
@@ -182,6 +183,20 @@ public class ToolController extends BaseController{
     public String normalizeJsonStr(@RequestParam @ApiParam(name = "str", value = "待规整化字符串", defaultValue = "{\"address\":\"{\\\"city\\\":\\\"上海市\\\",\\\"name\\\":\\\"上海\\\",\\\"province\\\":\\\"浙江省\\\"}\",\"age\":18}")String str){
         logger.info("规整化字符串入参: {}", str);
         return StringUtils.normalizeJsonStr(str);
+    }
+
+    @PostMapping("/replaceStr")
+    @ApiOperation(value = "替换字符串,支持正则，空字符串用empty")
+    public String replaceStr(@RequestParam String s, @RequestParam String[] replaceStr, @RequestParam String[] toStr){
+        logger.info("替换字符串 {} {} {}", s, String.join(CommonConstants.COMMA, replaceStr), String.join(CommonConstants.COMMA, toStr));
+        if (replaceStr.length != toStr.length){
+            logger.info("长度不一致，不处理");
+            return s;
+        }
+        for (int i=0; i<replaceStr.length; i++){
+            s = s.replaceAll(replaceStr[i], CommonConstants.EMPTY.equals(toStr[i]) ? "" : toStr[i]);
+        }
+        return s;
     }
 
 
