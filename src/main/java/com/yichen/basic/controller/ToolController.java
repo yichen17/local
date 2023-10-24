@@ -185,6 +185,13 @@ public class ToolController extends BaseController{
         return StringUtils.normalizeJsonStr(str);
     }
 
+    /**
+     * 存在问题，请求头太长，如果切换到请求体的话，字符串本身又需要转译处理。。  待考虑好的方案。
+     * @param s
+     * @param replaceStr
+     * @param toStr
+     * @return
+     */
     @PostMapping("/replaceStr")
     @ApiOperation(value = "替换字符串,支持正则，空字符串用empty")
     public String replaceStr(@RequestParam String s, @RequestParam String[] replaceStr, @RequestParam String[] toStr){
@@ -197,6 +204,11 @@ public class ToolController extends BaseController{
             s = s.replaceAll(replaceStr[i], CommonConstants.EMPTY.equals(toStr[i]) ? "" : toStr[i]);
         }
         return s;
+    }
+
+
+    public static void main(String[] args) {
+        
     }
 
 
